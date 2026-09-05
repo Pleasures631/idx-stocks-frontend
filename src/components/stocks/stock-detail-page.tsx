@@ -175,6 +175,14 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
   const brokerRows = detail.broker_summary
     .filter((b) => b.trade_date === activeBrokerDate)
     .sort((a, b) => Math.abs(b.net_value) - Math.abs(a.net_value))
+  const buyBrokerRows = brokerRows
+    .filter((broker) => broker.buy_volume > 0 || broker.buy_value > 0)
+    .slice()
+    .sort((a, b) => b.buy_volume - a.buy_volume)
+  const sellBrokerRows = brokerRows
+    .filter((broker) => broker.sell_volume > 0 || broker.sell_value > 0)
+    .slice()
+    .sort((a, b) => b.sell_volume - a.sell_volume)
 
   // brokerDates tersortir descending (terbaru dulu). ◀ = ke hari sebelumnya (index +1), ▶ = hari berikutnya (index -1).
   const dateIndex = activeBrokerDate ? brokerDates.indexOf(activeBrokerDate) : -1
@@ -398,29 +406,79 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
                   Tidak ada data broker summary untuk {detail.symbol} pada periode ini.
                 </div>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Broker</TableHead>
-                      <TableHead className="text-right">Buy</TableHead>
-                      <TableHead className="text-right">Sell</TableHead>
-                      <TableHead className="text-right">Net Value</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {brokerRows.map((broker) => (
-                      <TableRow key={broker.broker_code}>
-                        <TableCell>
-                          <div className="font-medium">{broker.broker_name}</div>
-                          <div className="text-xs text-muted-foreground">{broker.broker_type} · {broker.broker_code}</div>
-                        </TableCell>
-                        <TableCell className="text-right">{formatBigNumber(broker.buy_volume)}</TableCell>
-                        <TableCell className="text-right">{formatBigNumber(broker.sell_volume)}</TableCell>
-                        <TableCell className="text-right">{formatIDR(broker.net_value)}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="rounded-lg border border-border/60">
+                    <div className="border-b border-border/60 px-4 py-3">
+                      <h3 className="text-sm font-semibold text-emerald-500">Broker Buy</h3>
+                      <p className="text-xs text-muted-foreground">Diurutkan berdasarkan volume beli</p>
+                    </div>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Broker</TableHead>
+                          <TableHead className="text-right">Volume</TableHead>
+                          <TableHead className="text-right">Value</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {buyBrokerRows.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={3} className="py-6 text-center text-sm text-muted-foreground">
+                              Tidak ada data buy
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          buyBrokerRows.map((broker) => (
+                            <TableRow key={broker.broker_code}>
+                              <TableCell>
+                                <div className="font-medium">{broker.broker_name}</div>
+                                <div className="text-xs text-muted-foreground">{broker.broker_type} · {broker.broker_code}</div>
+                              </TableCell>
+                              <TableCell className="text-right">{formatBigNumber(broker.buy_volume)}</TableCell>
+                              <TableCell className="text-right">{formatIDR(broker.buy_value)}</TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  <div className="rounded-lg border border-border/60">
+                    <div className="border-b border-border/60 px-4 py-3">
+                      <h3 className="text-sm font-semibold text-red-500">Broker Sell</h3>
+                      <p className="text-xs text-muted-foreground">Diurutkan berdasarkan volume jual</p>
+                    </div>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Broker</TableHead>
+                          <TableHead className="text-right">Volume</TableHead>
+                          <TableHead className="text-right">Value</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {sellBrokerRows.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={3} className="py-6 text-center text-sm text-muted-foreground">
+                              Tidak ada data sell
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          sellBrokerRows.map((broker) => (
+                            <TableRow key={broker.broker_code}>
+                              <TableCell>
+                                <div className="font-medium">{broker.broker_name}</div>
+                                <div className="text-xs text-muted-foreground">{broker.broker_type} · {broker.broker_code}</div>
+                              </TableCell>
+                              <TableCell className="text-right">{formatBigNumber(broker.sell_volume)}</TableCell>
+                              <TableCell className="text-right">{formatIDR(broker.sell_value)}</TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
               )}
             </CardContent>
           </Card>
