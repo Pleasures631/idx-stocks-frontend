@@ -1,6 +1,12 @@
 import axios from "axios"
 import { useAuthStore } from "@/stores/auth-store"
 
+declare module "axios" {
+  export interface AxiosRequestConfig {
+    skipLoading?: boolean
+  }
+}
+
 const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080",
   headers: {
@@ -19,7 +25,7 @@ apiClient.interceptors.request.use(
       config.headers.Authorization = `Bearer ${state.accessToken}`
     }
 
-    if (!config.headers["X-Skip-Loading"]) {
+    if (!config.skipLoading) {
       activeRequests++
       useAuthStore.getState().setLoading(true)
     }
@@ -31,7 +37,7 @@ apiClient.interceptors.request.use(
 
 apiClient.interceptors.response.use(
   (response) => {
-    if (!response.config.headers["X-Skip-Loading"]) {
+    if (!response.config.skipLoading) {
       activeRequests = Math.max(0, activeRequests - 1)
       if (activeRequests === 0) {
         useAuthStore.getState().setLoading(false)
@@ -42,7 +48,7 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config
 
-    if (!originalRequest.headers["X-Skip-Loading"]) {
+    if (!originalRequest.skipLoading) {
       activeRequests = Math.max(0, activeRequests - 1)
       if (activeRequests === 0) {
         useAuthStore.getState().setLoading(false)
@@ -57,8 +63,7 @@ apiClient.interceptors.response.use(
         try {
           const response = await axios.post(
             `${apiClient.defaults.baseURL}/api/auth/refresh`,
-            { refresh_token: refreshToken },
-            { headers: { "X-Skip-Loading": "true" } }
+            { refresh_token: refreshToken }
           )
           const { access_token, refresh_token } = response.data
           useAuthStore.getState().setTokens(access_token, refresh_token)
