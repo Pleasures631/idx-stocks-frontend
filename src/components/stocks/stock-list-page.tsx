@@ -9,7 +9,7 @@ import { stocksService } from "@/services/stocks"
 import { formatPercent, formatBigNumber } from "@/lib/utils"
 import { Search, TrendingUp, TrendingDown } from "lucide-react"
 import Link from "next/link"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 
 interface StockRow {
   ticker: string
@@ -18,6 +18,9 @@ interface StockRow {
   change: number
   volume: number
 }
+
+const INITIAL_VISIBLE = 40
+const PAGE_SIZE = 30
 
 function TableRowSkeleton() {
   return (
@@ -50,6 +53,8 @@ export function StockListPage() {
   const [search, setSearch] = useState("")
   const [loading, setLoading] = useState(true)
   const [stocks, setStocks] = useState<StockRow[]>([])
+  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE)
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     let active = true
@@ -66,6 +71,7 @@ export function StockListPage() {
             volume: s.volume,
           }))
         )
+        setVisibleCount(INITIAL_VISIBLE)
       } catch {
         if (active) setStocks([])
       } finally {
@@ -78,11 +84,44 @@ export function StockListPage() {
     }
   }, [])
 
+  useEffect(() => {
+    setVisibleCount(INITIAL_VISIBLE)
+  }, [search])
+
   const filtered = stocks.filter(
     (s) =>
       s.ticker.toLowerCase().includes(search.toLowerCase()) ||
       s.name.toLowerCase().includes(search.toLowerCase())
   )
+  const hasMore = visibleCount < filtered.length
+  const displayed = hasMore ? filtered.slice(0, visibleCount) : filtered
+
+  useEffect(() => {
+    const el = sentinelRef.current
+    if (!el || !hasMore || loading) return
+
+    let node: HTMLElement | null = el.parentElement
+    let root: Element | null = null
+    while (node && node !== document.documentElement) {
+      const style = window.getComputedStyle(node)
+      if (/(auto|scroll|overlay)/.test(style.overflowY)) {
+        root = node
+        break
+      }
+      node = node.parentElement
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount((prev) => prev + PAGE_SIZE)
+        }
+      },
+      root ? { root, rootMargin: "400px 0px" } : { rootMargin: "400px 0px" }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [hasMore, loading, visibleCount, search])
 
   return (
     <div className="space-y-6">
@@ -122,7 +161,7 @@ export function StockListPage() {
                 {loading ? (
                   Array.from({ length: 8 }).map((_, i) => <TableRowSkeleton key={i} />)
                 ) : (
-                  filtered.map((stock) => (
+                  displayed.map((stock) => (
                     <TableRow key={stock.ticker}>
                       <TableCell>
                         <Link
@@ -161,7 +200,7 @@ export function StockListPage() {
             {loading ? (
               Array.from({ length: 6 }).map((_, i) => <MobileCardSkeleton key={i} />)
             ) : (
-              filtered.map((stock) => (
+              displayed.map((stock) => (
                 <Link
                   key={stock.ticker}
                   href={`/stocks/${stock.ticker}`}
@@ -181,6 +220,13 @@ export function StockListPage() {
               ))
             )}
           </div>
+
+          {!loading && !hasMore && filtered.length > 0 && (
+            <p className="text-center text-xs text-muted-foreground mt-4">
+              Showing all {filtered.length} stocks
+            </p>
+          )}
+          <div ref={sentinelRef} aria-hidden="true" />
         </CardContent>
       </Card>
     </div>
