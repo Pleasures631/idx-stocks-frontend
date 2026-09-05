@@ -11,14 +11,23 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts"
+import type * as React from "react"
+
+const TOOLTIP_CONTENT_STYLE: React.CSSProperties = {
+  backgroundColor: "hsl(var(--popover))",
+  border: "1px solid hsl(var(--border))",
+  borderRadius: "8px",
+  color: "hsl(var(--popover-foreground))",
+}
 
 interface LineChartProps {
-  data: { date: string; value: number }[]
+  data: Record<string, unknown>[]
   xKey?: string
   yKey?: string
   height?: number
   color?: string
   gradient?: boolean
+  customTooltip?: (props: { active?: boolean; payload?: any[]; label?: string }) => React.ReactNode
 }
 
 export function StockLineChart({
@@ -28,6 +37,7 @@ export function StockLineChart({
   height = 300,
   color = "#fff",
   gradient = true,
+  customTooltip,
 }: LineChartProps) {
   const gradientId = "lineGradient"
 
@@ -56,12 +66,8 @@ export function StockLineChart({
           domain={["auto", "auto"]}
         />
         <Tooltip
-          contentStyle={{
-            backgroundColor: "hsl(var(--popover))",
-            border: "1px solid hsl(var(--border))",
-            borderRadius: "8px",
-            color: "hsl(var(--popover-foreground))",
-          }}
+          content={customTooltip ? (p) => customTooltip(p as any) : undefined}
+          contentStyle={TOOLTIP_CONTENT_STYLE}
         />
         <Area
           type="monotone"

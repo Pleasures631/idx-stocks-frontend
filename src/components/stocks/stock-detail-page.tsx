@@ -11,7 +11,7 @@ import { StockLineChart } from "@/components/charts/line-chart"
 import { VolumeBarChart } from "@/components/charts/bar-chart"
 import { BrokerFlowAnalysis } from "@/components/stocks/broker-flow-analysis"
 import { stocksService, type TickerDetailParams } from "@/services/stocks"
-import type { TickerDetail, PriceChartRange, StockAnalyze } from "@/types"
+import type { TickerDetail, PriceChartRange, StockAnalyze, BrokerSummaryEntry } from "@/types"
 import { formatPercent, formatBigNumber, formatIDR } from "@/lib/utils"
 import { addDays, format } from "date-fns"
 import { ArrowLeft, TrendingUp, TrendingDown, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react"
@@ -113,6 +113,16 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
     [detail]
   )
 
+  const brokerByDate = useMemo(() => {
+    const map = new Map<string, BrokerSummaryEntry[]>()
+    for (const row of detail?.broker_summary ?? []) {
+      const list = map.get(row.trade_date)
+      if (list) list.push(row)
+      else map.set(row.trade_date, [row])
+    }
+    return map
+  }, [detail])
+
   // Preserve the selected broker date across refetches while it is still valid in the
   // new window; only fall back to the newest date when the current selection no longer
   // exists (e.g. a preset/range narrowed the window past it).
@@ -152,7 +162,8 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
 
   const lastPoint = detail.price_chart[detail.price_chart.length - 1]
   const priceHistory = detail.price_chart.map((p) => ({
-    date: p.trade_date.slice(8, 10) + "/" + p.trade_date.slice(5, 7),
+    trade_date: p.trade_date,
+    displayDate: p.trade_date.slice(8, 10) + "/" + p.trade_date.slice(5, 7),
     value: p.close,
   }))
   const volumeData = detail.volume_by_broker
@@ -235,7 +246,65 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
               {rangeLoading ? (
                 <Skeleton className="h-[350px] w-full rounded-lg" />
               ) : (
-                <StockLineChart data={priceHistory} height={350} color="#a1a1aa" />
+                <StockLineChart
+                  data={priceHistory}
+                  xKey="displayDate"
+                  height={350}
+                  color="#a1a1aa"
+                  customTooltip={(p) => {
+                    if (!p.active || !p.payload?.length) return null
+                    const point = p.payload[0].payload as { trade_date: string; value: number }
+                    const rows = brokerByDate.get(point.trade_date) ?? []
+                    const buyers = rows.filter((row) => row.buy_value > 0).sort((a, b) => b.buy_value - a.buy_value).slice(0, 3)
+                    const sellers = rows.filter((row) => row.sell_value > 0).sort((a, b) => b.sell_value - a.sell_value).slice(0, 3)
+                    return (
+                      <div className="p-3 shadow-md">
+                        <div className="mb-2 flex items-baseline justify-between gap-4 border-b border-border pb-2">
+                          <span className="text-xs font-medium text-muted-foreground">{point.trade_date}</span>
+                          <span className="text-sm font-semibold">Rp{point.value.toLocaleString()}</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-1.5">
+                            <div className="text-xs font-semibold text-muted-foreground">Top Buyers</div>
+                            {buyers.length === 0 ? (
+                              <div className="text-xs text-muted-foreground">No data</div>
+                            ) : (
+                              buyers.map((b) => (
+                                <div key={`buy-${b.broker_code}`} className="space-y-0.5">
+                                  <div className="text-xs font-medium leading-tight">{b.broker_name}</div>
+                                  <div className="text-[10px] text-muted-foreground">
+                                    {b.broker_type} · {b.broker_code}
+                                  </div>
+                                  <div className="text-xs font-semibold text-emerald-500">
+                                    {formatIDR(b.buy_value)} · {formatBigNumber(b.buy_volume)}
+                                  </div>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                          <div className="space-y-1.5">
+                            <div className="text-xs font-semibold text-muted-foreground">Top Sellers</div>
+                            {sellers.length === 0 ? (
+                              <div className="text-xs text-muted-foreground">No data</div>
+                            ) : (
+                              sellers.map((b) => (
+                                <div key={`sell-${b.broker_code}`} className="space-y-0.5">
+                                  <div className="text-xs font-medium leading-tight">{b.broker_name}</div>
+                                  <div className="text-[10px] text-muted-foreground">
+                                    {b.broker_type} · {b.broker_code}
+                                  </div>
+                                  <div className="text-xs font-semibold text-red-500">
+                                    {formatIDR(b.sell_value)} · {formatBigNumber(b.sell_volume)}
+                                  </div>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  }}
+                />
               )}
             </CardContent>
           </Card>
