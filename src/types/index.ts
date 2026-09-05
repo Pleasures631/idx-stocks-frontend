@@ -65,8 +65,19 @@ export interface BrokerSummaryResponse {
 
 // --- Stock List (for select/search) ---
 export interface StockListItem {
+  id: number
   stock_code: string
   stock_name: string
+  listing_date: string
+  total_shares: number
+  listing_board: string
+  is_active: boolean
+  created_at: string
+  last_trade_date: string
+  last_price: number
+  change_price: number
+  change_pct: number
+  volume: number
 }
 
 // --- Broker List ---

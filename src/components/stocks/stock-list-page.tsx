@@ -5,7 +5,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
-import { mockStockList } from "@/lib/mock"
 import { stocksService } from "@/services/stocks"
 import { formatPercent, formatBigNumber } from "@/lib/utils"
 import { Search, TrendingUp, TrendingDown } from "lucide-react"
@@ -19,14 +18,6 @@ interface StockRow {
   change: number
   volume: number
 }
-
-const MockRows: StockRow[] = mockStockList.map((s) => ({
-  ticker: s.ticker,
-  name: s.name,
-  price: s.price,
-  change: s.change,
-  volume: s.volume,
-}))
 
 function TableRowSkeleton() {
   return (
@@ -58,7 +49,7 @@ function MobileCardSkeleton() {
 export function StockListPage() {
   const [search, setSearch] = useState("")
   const [loading, setLoading] = useState(true)
-  const [stocks, setStocks] = useState<StockRow[]>(MockRows)
+  const [stocks, setStocks] = useState<StockRow[]>([])
 
   useEffect(() => {
     let active = true
@@ -66,28 +57,17 @@ export function StockListPage() {
       try {
         const list = await stocksService.getStockList()
         if (!active) return
-        const liveByCode = new Map(
-          MockRows.map((m) => [
-            m.ticker,
-            { price: m.price, change: m.change, volume: m.volume },
-          ])
-        )
         setStocks(
-          list.length > 0
-            ? list.map((s) => {
-                const live = liveByCode.get(s.stock_code)
-                return {
-                  ticker: s.stock_code,
-                  name: s.stock_name,
-                  price: live?.price ?? 0,
-                  change: live?.change ?? 0,
-                  volume: live?.volume ?? 0,
-                }
-              })
-            : MockRows
+          list.map((s) => ({
+            ticker: s.stock_code,
+            name: s.stock_name,
+            price: s.last_price,
+            change: s.change_pct,
+            volume: s.volume,
+          }))
         )
       } catch {
-        if (active) setStocks(MockRows)
+        if (active) setStocks([])
       } finally {
         if (active) setLoading(false)
       }
