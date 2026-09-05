@@ -86,6 +86,127 @@ export interface BrokerListItem {
   broker_name: string
 }
 
+// --- Ticker Detail ---
+export interface TickerPricePoint {
+  trade_date: string
+  open: number
+  high: number
+  low: number
+  close: number
+  volume: number
+  change_pct: number
+}
+
+export interface BrokerVolume {
+  broker_code: string
+  broker_name: string
+  broker_type: string
+  buy_lot: number
+  sell_lot: number
+  buy_volume: number
+  sell_volume: number
+  buy_value: number
+  sell_value: number
+  net_value: number
+  active_days: number
+}
+
+export interface BrokerSummaryEntry {
+  trade_date: string
+  broker_code: string
+  broker_name: string
+  broker_type: string
+  buy_lot: number
+  sell_lot: number
+  buy_volume: number
+  sell_volume: number
+  buy_value: number
+  sell_value: number
+  net_value: number
+  frequency: number
+}
+
+export type PriceChartRange = "1m" | "3m" | "1y"
+
+export interface TickerDetail {
+  symbol: string
+  stock_name: string
+  range: string
+  from: string
+  to: string
+  price_chart: TickerPricePoint[]
+  volume_by_broker: BrokerVolume[]
+  broker_summary: BrokerSummaryEntry[]
+}
+
+// --- Broker Flow Analysis ---
+export interface AnalyzeAnomaly {
+  stock_code: string
+  broker_code: string
+  broker_type: string
+  trade_date: string
+  net_value: number
+  formatted_net: string
+  z_score: number
+  is_market_maker: boolean
+}
+
+export interface AnalyzeBrokerFlow {
+  broker_code: string
+  broker_type: string
+  buy_value: number
+  sell_value: number
+  net_value: number
+  buy_lot: number
+  sell_lot: number
+  net_lot: number
+  active_days: number
+  formatted_net_value: string
+  display_status: string
+}
+
+export interface StockAnalyze {
+  symbol: string
+  start_date: string
+  end_date: string
+  total_days: number
+  phase: string
+  total_buy_value: number
+  total_sell_value: number
+  net_value: number
+  foreign_net_value: number
+  government_net: number
+  local_net_value: number
+  total_brokers: number
+  retail_net: number
+  institutional_net: number
+  local_mid_net: number
+  smart_money_ratio: number
+  retail_dominance: number
+  top1_concentration: number
+  foreign_leadership: boolean
+  smart_money_active_days: number
+  smart_money_consistency: number
+  smart_money_momentum: number
+  first_half_date: string
+  second_half_date: string
+  first_half_net: number
+  second_half_net: number
+  momentum_accelerating: boolean
+  price_change_pct: number
+  price_confirms: boolean
+  volume_spike_ratio: number
+  has_volume_spike: boolean
+  anomalies: AnalyzeAnomaly[]
+  formatted_buy_value: string
+  formatted_sell_value: string
+  formatted_net_value: string
+  formatted_foreign_net: string
+  brokers_accumulation: AnalyzeBrokerFlow[]
+  brokers_distribution: AnalyzeBrokerFlow[]
+  display_status: string
+}
+
 // --- Top Accumulation ---
 export interface TopAccumulation {
   stock_code: string

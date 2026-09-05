@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { stocksService } from "@/services/stocks"
@@ -52,12 +53,16 @@ function MobileCardSkeleton() {
 export function StockListPage() {
   const [search, setSearch] = useState("")
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [stocks, setStocks] = useState<StockRow[]>([])
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE)
+  const [reloadKey, setReloadKey] = useState(0)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     let active = true
+    setLoading(true)
+    setError(null)
     const load = async () => {
       try {
         const list = await stocksService.getStockList()
@@ -73,7 +78,9 @@ export function StockListPage() {
         )
         setVisibleCount(INITIAL_VISIBLE)
       } catch {
-        if (active) setStocks([])
+        if (!active) return
+        setStocks([])
+        setError("Gagal memuat daftar saham. Periksa koneksi ke server, lalu coba lagi.")
       } finally {
         if (active) setLoading(false)
       }
@@ -82,7 +89,7 @@ export function StockListPage() {
     return () => {
       active = false
     }
-  }, [])
+  }, [reloadKey])
 
   useEffect(() => {
     setVisibleCount(INITIAL_VISIBLE)
@@ -140,7 +147,19 @@ export function StockListPage() {
         />
       </div>
 
-      <Card>
+      {!loading && error && (
+        <Card>
+          <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
+            <div className="text-sm font-medium text-destructive">{error}</div>
+            <Button variant="outline" onClick={() => setReloadKey((k) => k + 1)}>
+              Coba lagi
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {!error && (
+        <Card>
         <CardHeader>
           <CardTitle>All Stocks ({loading ? "..." : filtered.length})</CardTitle>
         </CardHeader>
@@ -229,6 +248,7 @@ export function StockListPage() {
           <div ref={sentinelRef} aria-hidden="true" />
         </CardContent>
       </Card>
+      )}
     </div>
   )
 }
