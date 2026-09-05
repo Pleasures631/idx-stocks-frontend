@@ -64,22 +64,24 @@ export function StockListPage() {
     let active = true
     const load = async () => {
       try {
-        const [list, eod] = await Promise.all([
-          stocksService.getStockList(),
-          stocksService.getTopAccumulationEod(),
-        ])
+        const list = await stocksService.getStockList()
         if (!active) return
-        const priceByCode = new Map(eod.map((s) => [s.stock_code, s]))
+        const liveByCode = new Map(
+          MockRows.map((m) => [
+            m.ticker,
+            { price: m.price, change: m.change, volume: m.volume },
+          ])
+        )
         setStocks(
           list.length > 0
             ? list.map((s) => {
-                const live = priceByCode.get(s.stock_code)
+                const live = liveByCode.get(s.stock_code)
                 return {
                   ticker: s.stock_code,
                   name: s.stock_name,
-                  price: live?.last_price ?? 0,
-                  change: live?.last_change ?? 0,
-                  volume: live?.last_volume ?? 0,
+                  price: live?.price ?? 0,
+                  change: live?.change ?? 0,
+                  volume: live?.volume ?? 0,
                 }
               })
             : MockRows
