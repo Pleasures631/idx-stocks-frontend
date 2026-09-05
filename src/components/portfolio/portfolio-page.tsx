@@ -11,7 +11,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Skeleton } from "@/components/ui/skeleton"
 import { AllocationPieChart } from "@/components/charts/pie-chart"
 import { usePortfolioStore } from "@/stores/portfolio-store"
-import { mockStockList } from "@/lib/mock"
 import { stocksService } from "@/services/stocks"
 import { formatIDR, formatPercent, formatBigNumber } from "@/lib/utils"
 import { useForm } from "react-hook-form"
@@ -74,10 +73,21 @@ export function PortfolioPage() {
   const { holdings, loadHoldings, addHolding, removeHolding } = usePortfolioStore()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [priceByTicker, setPriceByTicker] = useState<Map<string, { price: number; change: number }>>(new Map())
 
   useEffect(() => {
     loadHoldings()
     const timer = setTimeout(() => setLoading(false), 600)
+    stocksService
+      .getStockList()
+      .then((list) => {
+        const map = new Map<string, { price: number; change: number }>()
+        for (const s of list) {
+          map.set(s.stock_code, { price: s.last_price, change: s.change_pct })
+        }
+        setPriceByTicker(map)
+      })
+      .catch(() => {})
     return () => clearTimeout(timer)
   }, [loadHoldings])
 
@@ -250,10 +260,11 @@ export function PortfolioPage() {
                   </TableHeader>
                   <TableBody>
                     {holdings.map((h) => {
-                      const stockData = mockStockList.find((s) => s.ticker === h.ticker)
-                      const currentValue = h.lot * 100 * (stockData?.price || h.avg_price)
+                      const live = priceByTicker.get(h.ticker)
+                      const currentPrice = live?.price ?? h.avg_price
+                      const currentValue = h.lot * 100 * currentPrice
                       const investment = h.lot * 100 * h.avg_price
-                      const gainLoss = ((currentValue - investment) / investment) * 100
+                      const gainLoss = investment > 0 ? ((currentValue - investment) / investment) * 100 : 0
 
                       return (
                         <TableRow key={h.id}>
@@ -285,10 +296,11 @@ export function PortfolioPage() {
               {/* Mobile Cards */}
               <div className="md:hidden space-y-2">
                 {holdings.map((h) => {
-                  const stockData = mockStockList.find((s) => s.ticker === h.ticker)
-                  const currentValue = h.lot * 100 * (stockData?.price || h.avg_price)
+                  const live = priceByTicker.get(h.ticker)
+                  const currentPrice = live?.price ?? h.avg_price
+                  const currentValue = h.lot * 100 * currentPrice
                   const investment = h.lot * 100 * h.avg_price
-                  const gainLoss = ((currentValue - investment) / investment) * 100
+                  const gainLoss = investment > 0 ? ((currentValue - investment) / investment) * 100 : 0
 
                   return (
                     <div key={h.id} className="rounded-lg border p-3 space-y-2">

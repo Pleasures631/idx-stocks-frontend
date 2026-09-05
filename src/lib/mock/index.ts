@@ -113,21 +113,3 @@ export const mockIHSGData = [
   { date: "09/02", value: 7350 },
   { date: "09/03", value: 7400 },
 ]
-
-export const mockStockList = [
-  { ticker: "BBCA", name: "Bank Central Asia", price: 9650, change: 1.58, volume: 52000000 },
-  { ticker: "TLKM", name: "Telkom Indonesia", price: 4300, change: 2.38, volume: 35000000 },
-  { ticker: "BMRI", name: "Bank Mandiri", price: 6900, change: 1.47, volume: 28000000 },
-  { ticker: "BBRI", name: "Bank Rakyat Indonesia", price: 5150, change: 0.98, volume: 42000000 },
-  { ticker: "CUAN", name: "Bakrieland Development", price: 190, change: 5.56, volume: 180000000 },
-  { ticker: "ASII", name: "Astra International", price: 6500, change: 2.5, volume: 20000000 },
-  { ticker: "UNVR", name: "Unilever Indonesia", price: 4850, change: 1.8, volume: 8000000 },
-  { ticker: "ADRO", name: "Adaro Energy Indonesia", price: 2850, change: 3.2, volume: 25000000 },
-  { ticker: "INDF", name: "Indofood Sukses Makmur", price: 7800, change: -0.5, volume: 5000000 },
-  { ticker: "ICBP", name: "Indofood CBP Sukses Makmur", price: 12500, change: 0.8, volume: 3000000 },
-  { ticker: "KLBF", name: "Kalbe Farma", price: 2100, change: -1.2, volume: 15000000 },
-  { ticker: "SIDO", name: "Sido Muncul", price: 850, change: 0.6, volume: 10000000 },
-  { ticker: "CPIN", name: "Charoen Pokphand Indonesia", price: 5200, change: 1.1, volume: 7000000 },
-  { ticker: "EXCL", name: "XL Axiata", price: 3100, change: -0.3, volume: 12000000 },
-  { ticker: "ISAT", name: "Indosat Ooredoo Hutchison", price: 1750, change: 0.4, volume: 9000000 },
-]

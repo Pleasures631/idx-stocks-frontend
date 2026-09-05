@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { useWatchlistStore } from "@/stores/watchlist-store"
-import { mockStockList } from "@/lib/mock"
+import { stocksService } from "@/services/stocks"
 import { formatPercent } from "@/lib/utils"
 import { Search, Star, TrendingUp, TrendingDown, Plus, X } from "lucide-react"
 import Link from "next/link"
@@ -14,12 +14,36 @@ import { useState, useEffect } from "react"
 export function WatchlistPage() {
   const { items, loadItems, addItem, removeItem } = useWatchlistStore()
   const [search, setSearch] = useState("")
+  const [allStocks, setAllStocks] = useState<{ ticker: string; name: string; price: number; change: number }[]>([])
 
   useEffect(() => {
     loadItems()
   }, [loadItems])
 
-  const suggestions = mockStockList.filter(
+  useEffect(() => {
+    let active = true
+    stocksService
+      .getStockList()
+      .then((list) => {
+        if (!active) return
+        setAllStocks(
+          list.map((s) => ({
+            ticker: s.stock_code,
+            name: s.stock_name,
+            price: s.last_price,
+            change: s.change_pct,
+          }))
+        )
+      })
+      .catch(() => {
+        if (active) setAllStocks([])
+      })
+    return () => {
+      active = false
+    }
+  }, [])
+
+  const suggestions = allStocks.filter(
     (s) =>
       !items.find((i) => i.ticker === s.ticker) &&
       (s.ticker.toLowerCase().includes(search.toLowerCase()) ||
@@ -77,7 +101,7 @@ export function WatchlistPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {items.map((item) => {
-            const stockData = mockStockList.find((s) => s.ticker === item.ticker)
+            const stockData = allStocks.find((s) => s.ticker === item.ticker)
             return (
               <Card key={item.id}>
                 <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">

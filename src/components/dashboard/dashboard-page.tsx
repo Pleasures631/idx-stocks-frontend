@@ -4,21 +4,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { StockLineChart } from "@/components/charts/line-chart"
-import { mockIHSGData, mockStockList } from "@/lib/mock"
+import { mockIHSGData } from "@/lib/mock"
+import { stocksService } from "@/services/stocks"
+import type { StockListItem } from "@/types"
 import { formatPercent, formatBigNumber } from "@/lib/utils"
 import { TrendingUp, TrendingDown, Briefcase, BarChart3, ArrowUpRight } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
 
-const gainers = mockStockList
-  .filter((s) => s.change > 0)
-  .sort((a, b) => b.change - a.change)
-  .slice(0, 5)
-
-const losers = mockStockList
-  .filter((s) => s.change < 0)
-  .sort((a, b) => a.change - b.change)
-  .slice(0, 5)
+interface Mover {
+  ticker: string
+  name: string
+  price: number
+  change: number
+}
 
 function StatCardSkeleton() {
   return (
@@ -56,10 +55,32 @@ function StockListSkeleton() {
 
 export function DashboardPage() {
   const [loading, setLoading] = useState(true)
+  const [movers, setMovers] = useState<{ gainers: Mover[]; losers: Mover[] }>({ gainers: [], losers: [] })
 
   useEffect(() => {
+    let active = true
     const timer = setTimeout(() => setLoading(false), 800)
-    return () => clearTimeout(timer)
+    stocksService
+      .getStockList()
+      .then((list: StockListItem[]) => {
+        if (!active) return
+        const rows: Mover[] = list.map((s) => ({
+          ticker: s.stock_code,
+          name: s.stock_name,
+          price: s.last_price,
+          change: s.change_pct,
+        }))
+        const gainers = rows.filter((s) => s.change > 0).sort((a, b) => b.change - a.change).slice(0, 5)
+        const losers = rows.filter((s) => s.change < 0).sort((a, b) => a.change - b.change).slice(0, 5)
+        setMovers({ gainers, losers })
+      })
+      .catch(() => {
+        if (active) setMovers({ gainers: [], losers: [] })
+      })
+    return () => {
+      active = false
+      clearTimeout(timer)
+    }
   }, [])
 
   return (
@@ -157,7 +178,10 @@ export function DashboardPage() {
           <CardContent>
             {loading ? <StockListSkeleton /> : (
               <div className="space-y-2">
-                {gainers.map((stock) => (
+                {movers.gainers.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">No gainers today</p>
+                ) : (
+                movers.gainers.map((stock) => (
                   <Link
                     key={stock.ticker}
                     href={`/stocks/${stock.ticker}`}
@@ -173,9 +197,10 @@ export function DashboardPage() {
                         <ArrowUpRight className="h-3 w-3 mr-1" />
                         {formatPercent(stock.change)}
                       </Badge>
-                    </div>
+</div>
                   </Link>
-                ))}
+                ))
+                )}
               </div>
             )}
           </CardContent>
@@ -191,10 +216,10 @@ export function DashboardPage() {
           <CardContent>
             {loading ? <StockListSkeleton /> : (
               <div className="space-y-2">
-                {losers.length === 0 ? (
+                {movers.losers.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-4">No losers today</p>
                 ) : (
-                  losers.map((stock) => (
+                  movers.losers.map((stock) => (
                     <Link
                       key={stock.ticker}
                       href={`/stocks/${stock.ticker}`}

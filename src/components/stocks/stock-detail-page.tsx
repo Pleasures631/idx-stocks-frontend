@@ -7,12 +7,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
 import { StockLineChart } from "@/components/charts/line-chart"
 import { VolumeBarChart } from "@/components/charts/bar-chart"
-import { mockStockList, mockBrokerSummary } from "@/lib/mock"
+import { mockBrokerSummary } from "@/lib/mock"
+import { stocksService } from "@/services/stocks"
+import type { StockListItem } from "@/types"
 import { formatPercent, formatBigNumber, formatIDR } from "@/lib/utils"
 import { ArrowLeft, TrendingUp, TrendingDown } from "lucide-react"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { useState, useEffect } from "react"
+
+interface StockMover {
+  ticker: string
+  name: string
+  price: number
+  change: number
+}
 
 function generatePriceHistory(currentPrice: number) {
   const data = []
@@ -96,15 +105,46 @@ interface StockDetailPageProps {
 }
 
 export function StockDetailPage({ ticker }: StockDetailPageProps) {
-  const stock = mockStockList.find((s) => s.ticker === ticker.toUpperCase())
+  const [stock, setStock] = useState<StockMover | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 800)
-    return () => clearTimeout(timer)
-  }, [])
+    let active = true
+    stocksService
+      .getStockList()
+      .then((list: StockListItem[]) => {
+        if (!active) return
+        const found = list.find((s) => s.stock_code === ticker.toUpperCase())
+        if (!found) {
+          setStock(null)
+          return
+        }
+        setStock({
+          ticker: found.stock_code,
+          name: found.stock_name,
+          price: found.last_price,
+          change: found.change_pct,
+        })
+      })
+      .catch(() => {
+        if (active) setStock(null)
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+    return () => {
+      active = false
+    }
+  }, [ticker])
 
-  if (!stock) return notFound()
+  if (!loading && !stock) return notFound()
+  if (!stock) {
+    return (
+      <div className="space-y-6">
+        <HeaderSkeleton />
+      </div>
+    )
+  }
 
   const priceHistory = generatePriceHistory(stock.price)
   const volumeData = mockBrokerSummary.slice(0, 8).map((b) => ({
