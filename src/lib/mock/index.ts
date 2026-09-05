@@ -1,0 +1,133 @@
+import type { TopAccumulationEod, TradingSummary, BrokerSummary } from "@/types"
+
+export const mockTradingSummary: TradingSummary[] = [
+  {
+    No: 1, IDStockSummary: 1001, Date: "2026-09-03", StockCode: "BBCA", StockName: "Bank Central Asia",
+    Previous: 9500, OpenPrice: 9550, FirstTrade: 9525, High: 9700, Low: 9450, Close: 9650, Change: 150,
+    Volume: 52000000, Value: 502000000000, Frequency: 125000, IndexIndividual: 9650,
+    Offer: 9660, OfferVolume: 300000, Bid: 9640, BidVolume: 250000,
+    ListedShares: 74678125000, TradebleShares: 61127500000, WeightForIndex: 25.5,
+    ForeignSell: 12000000, ForeignBuy: 18000000, DelistingDate: "",
+    NonRegularVolume: 1500000, NonRegularValue: 14475000000, NonRegularFrequency: 3500,
+    persen: 1.58, percentage: 1.58,
+  },
+  {
+    No: 2, IDStockSummary: 1002, Date: "2026-09-03", StockCode: "TLKM", StockName: "Telkom Indonesia",
+    Previous: 4200, OpenPrice: 4220, FirstTrade: 4210, High: 4350, Low: 4180, Close: 4300, Change: 100,
+    Volume: 35000000, Value: 149100000000, Frequency: 95000, IndexIndividual: 4300,
+    Offer: 4310, OfferVolume: 200000, Bid: 4290, BidVolume: 180000,
+    ListedShares: 62845700000, TradebleShares: 50276560000, WeightForIndex: 15.2,
+    ForeignSell: 8000000, ForeignBuy: 12000000, DelistingDate: "",
+    NonRegularVolume: 800000, NonRegularValue: 3440000000, NonRegularFrequency: 2100,
+    persen: 2.38, percentage: 2.38,
+  },
+  {
+    No: 3, IDStockSummary: 1003, Date: "2026-09-03", StockCode: "BMRI", StockName: "Bank Mandiri",
+    Previous: 6800, OpenPrice: 6850, FirstTrade: 6825, High: 6950, Low: 6750, Close: 6900, Change: 100,
+    Volume: 28000000, Value: 191100000000, Frequency: 85000, IndexIndividual: 6900,
+    Offer: 6910, OfferVolume: 150000, Bid: 6890, BidVolume: 120000,
+    ListedShares: 30630000000, TradebleShares: 24504000000, WeightForIndex: 12.8,
+    ForeignSell: 6000000, ForeignBuy: 9000000, DelistingDate: "",
+    NonRegularVolume: 500000, NonRegularValue: 3425000000, NonRegularFrequency: 1800,
+    persen: 1.47, percentage: 1.47,
+  },
+  {
+    No: 4, IDStockSummary: 1004, Date: "2026-09-03", StockCode: "BBRI", StockName: "Bank Rakyat Indonesia",
+    Previous: 5100, OpenPrice: 5120, FirstTrade: 5110, High: 5200, Low: 5050, Close: 5150, Change: 50,
+    Volume: 42000000, Value: 215400000000, Frequency: 110000, IndexIndividual: 5150,
+    Offer: 5160, OfferVolume: 250000, Bid: 5140, BidVolume: 200000,
+    ListedShares: 51380000000, TradebleShares: 41104000000, WeightForIndex: 18.1,
+    ForeignSell: 10000000, ForeignBuy: 15000000, DelistingDate: "",
+    NonRegularVolume: 1200000, NonRegularValue: 6180000000, NonRegularFrequency: 2800,
+    persen: 0.98, percentage: 0.98,
+  },
+  {
+    No: 5, IDStockSummary: 1005, Date: "2026-09-03", StockCode: "CUAN", StockName: "Bakrieland Development",
+    Previous: 180, OpenPrice: 182, FirstTrade: 181, High: 195, Low: 178, Close: 190, Change: 10,
+    Volume: 180000000, Value: 33480000000, Frequency: 250000, IndexIndividual: 190,
+    Offer: 191, OfferVolume: 5000000, Bid: 189, BidVolume: 4000000,
+    ListedShares: 46200000000, TradebleShares: 36960000000, WeightForIndex: 0.2,
+    ForeignSell: 5000000, ForeignBuy: 8000000, DelistingDate: "",
+    NonRegularVolume: 3000000, NonRegularValue: 567000000, NonRegularFrequency: 5000,
+    persen: 5.56, percentage: 5.56,
+  },
+]
+
+export const mockTopAccumulationEod: TopAccumulationEod[] = [
+  {
+    stock_code: "CUAN", stock_name: "Bakrieland Development", avg_close_strength: 75.5,
+    net_foreign: 2500000000, avg_value: 15000000000, last_trade_date: "2026-09-03",
+    last_price: 190, last_change: 5.56, last_volume: 180000000,
+    last_avg_vol20: 120000000, last_ma20: 175, last_ma50: 165,
+    last_res_20: 195, last_sup_20: 170, breakout_score: 85,
+    formatted_net_foreign: "Rp2.5B", formatted_avg_value: "Rp15.0B",
+    display_status: "STRONG BUY", local_participation: 35, last_rsi: 68,
+  },
+  {
+    stock_code: "ADRO", stock_name: "Adaro Energy Indonesia", avg_close_strength: 68.2,
+    net_foreign: 1800000000, avg_value: 8000000000, last_trade_date: "2026-09-03",
+    last_price: 2850, last_change: 3.2, last_volume: 25000000,
+    last_avg_vol20: 18000000, last_ma20: 2750, last_ma50: 2680,
+    last_res_20: 2900, last_sup_20: 2700, breakout_score: 72,
+    formatted_net_foreign: "Rp1.8B", formatted_avg_value: "Rp8.0B",
+    display_status: "BUY", local_participation: 42, last_rsi: 62,
+  },
+  {
+    stock_code: "UNVR", stock_name: "Unilever Indonesia", avg_close_strength: 55.8,
+    net_foreign: 900000000, avg_value: 5000000000, last_trade_date: "2026-09-03",
+    last_price: 4850, last_change: 1.8, last_volume: 8000000,
+    last_avg_vol20: 6500000, last_ma20: 4780, last_ma50: 4720,
+    last_res_20: 4900, last_sup_20: 4700, breakout_score: 58,
+    formatted_net_foreign: "Rp900M", formatted_avg_value: "Rp5.0B",
+    display_status: "NEUTRAL", local_participation: 55, last_rsi: 54,
+  },
+  {
+    stock_code: "ASII", stock_name: "Astra International", avg_close_strength: 72.1,
+    net_foreign: 3200000000, avg_value: 12000000000, last_trade_date: "2026-09-03",
+    last_price: 6500, last_change: 2.5, last_volume: 20000000,
+    last_avg_vol20: 15000000, last_ma20: 6350, last_ma50: 6280,
+    last_res_20: 6600, last_sup_20: 6300, breakout_score: 80,
+    formatted_net_foreign: "Rp3.2B", formatted_avg_value: "Rp12.0B",
+    display_status: "STRONG BUY", local_participation: 38, last_rsi: 71,
+  },
+]
+
+export const mockBrokerSummary: BrokerSummary[] = [
+  { No: 1, IDBrokerSummary: 1, Date: "2026-09-03", IDFirm: "YP", FirmName: "Yurie Pramadha", Volume: 50000000, Value: 450000000000, Frequency: 25000 },
+  { No: 2, IDBrokerSummary: 2, Date: "2026-09-03", IDFirm: "CC", FirmName: "Craft Capital Indonesia", Volume: 35000000, Value: 315000000000, Frequency: 18000 },
+  { No: 3, IDBrokerSummary: 3, Date: "2026-09-03", IDFirm: "PD", FirmName: "Panin Sekuritas", Volume: 28000000, Value: 252000000000, Frequency: 15000 },
+  { No: 4, IDBrokerSummary: 4, Date: "2026-09-03", IDFirm: "NI", FirmName: "Nova Indra Arta", Volume: 22000000, Value: 198000000000, Frequency: 12000 },
+  { No: 5, IDBrokerSummary: 5, Date: "2026-09-03", IDFirm: "BK", FirmName: "Mandiri Sekuritas", Volume: 30000000, Value: 270000000000, Frequency: 16000 },
+  { No: 6, IDBrokerSummary: 6, Date: "2026-09-03", IDFirm: "MG", FirmName: "Mega Capital Sekuritas", Volume: 18000000, Value: 162000000000, Frequency: 10000 },
+  { No: 7, IDBrokerSummary: 7, Date: "2026-09-03", IDFirm: "BI", FirmName: "Bintang Indonesia", Volume: 15000000, Value: 135000000000, Frequency: 8000 },
+  { No: 8, IDBrokerSummary: 8, Date: "2026-09-03", IDFirm: "AR", FirmName: "Adam & Roekhan", Volume: 12000000, Value: 108000000000, Frequency: 7000 },
+]
+
+export const mockIHSGData = [
+  { date: "08/25", value: 7200 },
+  { date: "08/26", value: 7180 },
+  { date: "08/27", value: 7250 },
+  { date: "08/28", value: 7220 },
+  { date: "08/29", value: 7300 },
+  { date: "09/01", value: 7280 },
+  { date: "09/02", value: 7350 },
+  { date: "09/03", value: 7400 },
+]
+
+export const mockStockList = [
+  { ticker: "BBCA", name: "Bank Central Asia", price: 9650, change: 1.58, volume: 52000000 },
+  { ticker: "TLKM", name: "Telkom Indonesia", price: 4300, change: 2.38, volume: 35000000 },
+  { ticker: "BMRI", name: "Bank Mandiri", price: 6900, change: 1.47, volume: 28000000 },
+  { ticker: "BBRI", name: "Bank Rakyat Indonesia", price: 5150, change: 0.98, volume: 42000000 },
+  { ticker: "CUAN", name: "Bakrieland Development", price: 190, change: 5.56, volume: 180000000 },
+  { ticker: "ASII", name: "Astra International", price: 6500, change: 2.5, volume: 20000000 },
+  { ticker: "UNVR", name: "Unilever Indonesia", price: 4850, change: 1.8, volume: 8000000 },
+  { ticker: "ADRO", name: "Adaro Energy Indonesia", price: 2850, change: 3.2, volume: 25000000 },
+  { ticker: "INDF", name: "Indofood Sukses Makmur", price: 7800, change: -0.5, volume: 5000000 },
+  { ticker: "ICBP", name: "Indofood CBP Sukses Makmur", price: 12500, change: 0.8, volume: 3000000 },
+  { ticker: "KLBF", name: "Kalbe Farma", price: 2100, change: -1.2, volume: 15000000 },
+  { ticker: "SIDO", name: "Sido Muncul", price: 850, change: 0.6, volume: 10000000 },
+  { ticker: "CPIN", name: "Charoen Pokphand Indonesia", price: 5200, change: 1.1, volume: 7000000 },
+  { ticker: "EXCL", name: "XL Axiata", price: 3100, change: -0.3, volume: 12000000 },
+  { ticker: "ISAT", name: "Indosat Ooredoo Hutchison", price: 1750, change: 0.4, volume: 9000000 },
+]
