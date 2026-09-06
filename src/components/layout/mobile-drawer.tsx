@@ -18,6 +18,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
+import { BrandMark } from "@/components/brand/brand-mark"
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -40,7 +41,7 @@ export function MobileDrawer({ open, onOpenChange }: MobileDrawerProps) {
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="left" className="w-64 p-0">
         <SheetHeader className="border-b px-4 py-3">
-          <SheetTitle className="text-sm font-bold">IDX Dashboard</SheetTitle>
+          <SheetTitle><BrandMark className="h-9 w-36 object-contain object-left" /></SheetTitle>
         </SheetHeader>
         <nav className="flex-1 space-y-1 p-2">
           {navItems.map((item) => {

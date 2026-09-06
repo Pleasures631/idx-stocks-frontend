@@ -12,6 +12,7 @@ import { useState, type FormEvent } from "react"
 import Link from "next/link"
 import { Loader2 } from "lucide-react"
 import axios from "axios"
+import { BrandMark } from "@/components/brand/brand-mark"
 
 export function RegisterForm() {
   const [error, setError] = useState("")
@@ -72,6 +73,7 @@ export function RegisterForm() {
     return (
       <Card className="mx-auto w-full max-w-lg">
         <CardHeader className="text-center">
+          <BrandMark className="mx-auto mb-2 h-12 w-48 object-contain" />
           <CardTitle className="text-2xl">Registration complete</CardTitle>
           <CardDescription>
             Your profile for <span className="font-medium text-foreground">{registeredEmail}</span> has been saved.
@@ -90,6 +92,7 @@ export function RegisterForm() {
     return (
       <Card className="mx-auto w-full max-w-sm">
         <CardHeader className="text-center">
+          <BrandMark className="mx-auto mb-2 h-12 w-48 object-contain" />
           <CardTitle className="text-2xl">Verify your email</CardTitle>
           <CardDescription>We sent a 6-digit code to <span className="font-medium text-foreground">{verificationEmail}</span>.</CardDescription>
         </CardHeader>
@@ -108,6 +111,7 @@ export function RegisterForm() {
   return (
     <Card className="mx-auto w-full max-w-lg">
       <CardHeader className="text-center">
+        <BrandMark className="mx-auto mb-2 h-12 w-48 object-contain" />
         <CardTitle className="text-2xl">Create your profile</CardTitle>
         <CardDescription>Register with your contact details to get started.</CardDescription>
       </CardHeader>

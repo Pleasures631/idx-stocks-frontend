@@ -13,6 +13,7 @@ import Link from "next/link"
 import { Loader2 } from "lucide-react"
 import { useState } from "react"
 import { authService } from "@/services/auth"
+import { BrandMark } from "@/components/brand/brand-mark"
 
 export function LoginForm() {
   const { setAuth } = useAuthStore()
@@ -42,6 +43,7 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-sm mx-auto">
       <CardHeader className="text-center">
+        <BrandMark className="mx-auto mb-2 h-12 w-48 object-contain" />
         <CardTitle className="text-2xl">Welcome Back</CardTitle>
         <CardDescription>Sign in to your account</CardDescription>
       </CardHeader>

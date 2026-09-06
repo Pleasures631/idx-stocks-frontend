@@ -14,6 +14,7 @@ import {
   ChevronRight,
 } from "lucide-react"
 import { useState } from "react"
+import { BrandMark } from "@/components/brand/brand-mark"
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -36,9 +37,7 @@ export function Sidebar() {
       )}
     >
       <div className="flex h-14 items-center justify-between border-b px-4">
-        {!collapsed && (
-          <span className="text-sm font-bold tracking-tight">IDX Dashboard</span>
-        )}
+        {!collapsed && <BrandMark className="h-9 w-36 object-contain object-left" />}
         <button
           onClick={() => setCollapsed(!collapsed)}
           className="rounded-md p-1 hover:bg-muted transition-colors"
