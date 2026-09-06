@@ -9,6 +9,7 @@ import {
   Briefcase,
   Star,
   Settings,
+  GraduationCap,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react"
@@ -19,6 +20,7 @@ const navItems = [
   { label: "Stocks", href: "/stocks", icon: TrendingUp },
   { label: "Portfolio", href: "/portfolio", icon: Briefcase },
   { label: "Watchlist", href: "/watchlist", icon: Star },
+  { label: "Edukasi Saham", href: "/education", icon: GraduationCap },
   { label: "Settings", href: "/settings", icon: Settings },
 ]
 
