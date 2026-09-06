@@ -27,7 +27,7 @@ const RANGES: { key: PriceChartRange; label: string }[] = [
 
 const FLOW_GROUPS = [
   { key: "FOREIGN", label: "ASING", color: "#3b82f6" },
-  { key: "RETAIL", label: "RITEL", color: "#f59e0b" },
+  { key: "RETAIL", label: "RITEL", color: "#ef4444" },
   { key: "INSTITUTIONAL", label: "INSTITUSI", color: "#a855f7" },
   { key: "LOCAL_MID", label: "LOKAL MENENGAH", color: "#14b8a6" },
 ] as const
