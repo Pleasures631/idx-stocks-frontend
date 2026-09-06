@@ -10,7 +10,6 @@ import { formatPercent, formatBigNumber } from "@/lib/utils"
 import { TrendingUp, TrendingDown, Briefcase, BarChart3, ArrowUpRight } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { TradingViewTickerTape } from "@/components/dashboard/tradingview-ticker-tape"
 import type { StockbitIHSGChartPoint, StockbitIHSGQuote } from "@/types"
 
 interface Mover {
@@ -90,7 +89,7 @@ export function DashboardPage() {
     stocksService.getIHSGQuote().then(setIHSG).catch(() => setIHSG(null))
     const to = new Date().toISOString().slice(0, 10)
     const fromDate = new Date()
-    fromDate.setDate(fromDate.getDate() - 7)
+    fromDate.setFullYear(fromDate.getFullYear() - 1)
     stocksService.getIHSGChart(fromDate.toISOString().slice(0, 10), to).then(setIHSGChart).catch(() => setIHSGChart([]))
   }, [])
 
@@ -100,8 +99,6 @@ export function DashboardPage() {
         <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground">Market overview and portfolio summary</p>
       </div>
-
-      <TradingViewTickerTape />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {loading ? (
@@ -170,7 +167,7 @@ export function DashboardPage() {
       <Card>
         <CardHeader>
           <CardTitle>IHSG Performance</CardTitle>
-          <CardDescription>Harga penutupan harian dari chart Stockbit yang tersimpan di database</CardDescription>
+          <CardDescription>Harga penutupan harian IHSG selama 1 tahun dari database</CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
