@@ -20,12 +20,22 @@ export interface RegisteredUser {
 
 export interface RegisterProfileResponse {
   success: boolean
+  message: string
+}
+
+export interface VerifyRegistrationResponse {
+  success: boolean
   data: RegisteredUser
 }
 
 export const userService = {
   async registerProfile(data: RegisterProfileRequest): Promise<RegisterProfileResponse> {
     const response = await apiClient.post<RegisterProfileResponse>("/users/register", data)
+    return response.data
+  },
+
+  async verifyRegistration(email: string, otp: string): Promise<VerifyRegistrationResponse> {
+    const response = await apiClient.post<VerifyRegistrationResponse>("/users/register/verify", { email, otp })
     return response.data
   },
 }

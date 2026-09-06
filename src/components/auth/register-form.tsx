@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { useState } from "react"
+import { useState, type FormEvent } from "react"
 import Link from "next/link"
 import { Loader2 } from "lucide-react"
 import axios from "axios"
@@ -16,6 +16,10 @@ import axios from "axios"
 export function RegisterForm() {
   const [error, setError] = useState("")
   const [registeredEmail, setRegisteredEmail] = useState("")
+  const [verificationEmail, setVerificationEmail] = useState("")
+  const [otp, setOtp] = useState("")
+  const [verificationError, setVerificationError] = useState("")
+  const [verifying, setVerifying] = useState(false)
   const [loading, setLoading] = useState(false)
 
   const form = useForm<RegisterFormData>({
@@ -29,8 +33,7 @@ export function RegisterForm() {
     try {
       const result = await userService.registerProfile(data)
       if (result.success) {
-        setRegisteredEmail(result.data.email)
-        form.reset()
+        setVerificationEmail(data.email)
       }
     } catch (requestError) {
       if (axios.isAxiosError(requestError)) {
@@ -52,6 +55,19 @@ export function RegisterForm() {
     }
   }
 
+  const onVerify = async (event: FormEvent) => {
+    event.preventDefault()
+    setVerifying(true)
+    setVerificationError("")
+    try {
+      const result = await userService.verifyRegistration(verificationEmail, otp)
+      if (result.success) setRegisteredEmail(result.data.email)
+    } catch (requestError) {
+      if (axios.isAxiosError(requestError)) setVerificationError(requestError.response?.data?.message || "Verification failed")
+      else setVerificationError("Verification failed. Please try again.")
+    } finally { setVerifying(false) }
+  }
+
   if (registeredEmail) {
     return (
       <Card className="mx-auto w-full max-w-lg">
@@ -65,6 +81,25 @@ export function RegisterForm() {
           <Button asChild className="h-11 w-full">
             <Link href="/login">Continue to sign in</Link>
           </Button>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (verificationEmail) {
+    return (
+      <Card className="mx-auto w-full max-w-sm">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl">Verify your email</CardTitle>
+          <CardDescription>We sent a 6-digit code to <span className="font-medium text-foreground">{verificationEmail}</span>.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={onVerify} className="space-y-4">
+            {verificationError && <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">{verificationError}</div>}
+            <div className="space-y-2"><Label htmlFor="otp">Verification code</Label><Input id="otp" inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="000000" value={otp} onChange={(event) => setOtp(event.target.value.replace(/\D/g, "").slice(0, 6))} className="h-12 text-center text-xl tracking-[0.5em]" /></div>
+            <Button type="submit" className="h-11 w-full" disabled={verifying || otp.length !== 6}>{verifying ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Verifying...</> : "Verify email"}</Button>
+            <Button type="button" variant="ghost" className="w-full" onClick={() => { setVerificationEmail(""); setOtp(""); }}>Back to registration</Button>
+          </form>
         </CardContent>
       </Card>
     )
