@@ -3,7 +3,7 @@
 import {
   LineChart,
   Line,
-  AreaChart,
+  ComposedChart,
   Area,
   XAxis,
   YAxis,
@@ -47,7 +47,7 @@ export function StockLineChart({
 
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <AreaChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+      <ComposedChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
         {gradient && (
           <defs>
             <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
@@ -97,9 +97,9 @@ export function StockLineChart({
           />
         )}
         {secondarySeries?.map((item) => (
-          <Line key={item.dataKey} type="monotone" dataKey={item.dataKey} name={item.name} stroke={item.color} strokeWidth={2} dot={false} yAxisId="right" />
+          <Line key={item.dataKey} type="monotone" dataKey={item.dataKey} name={item.name} stroke={item.color} strokeWidth={2} dot={false} connectNulls yAxisId="right" />
         ))}
-      </AreaChart>
+      </ComposedChart>
     </ResponsiveContainer>
   )
 }
