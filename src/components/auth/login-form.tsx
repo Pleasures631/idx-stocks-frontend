@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Loader2 } from "lucide-react"
 import { useState } from "react"
+import { authService } from "@/services/auth"
 
 export function LoginForm() {
   const { setAuth } = useAuthStore()
@@ -28,20 +29,11 @@ export function LoginForm() {
     setLoading(true)
     setError("")
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      })
-      const result = await res.json()
-      if (!res.ok) {
-        setError(result.message || "Login failed")
-        return
-      }
+      const result = await authService.login(data)
       setAuth(result.user, result.access_token, result.refresh_token, data.rememberMe)
       router.push("/dashboard")
-    } catch {
-      setError("Something went wrong")
+    } catch (requestError) {
+      setError((requestError as { response?: { data?: { message?: string } } }).response?.data?.message || "Login failed")
     } finally {
       setLoading(false)
     }
@@ -97,6 +89,7 @@ export function LoginForm() {
               Remember Me
             </Label>
           </div>
+          <div className="text-right text-sm"><Link href="/forgot-password" className="text-foreground underline hover:no-underline">Forgot password?</Link></div>
           <Button type="submit" className="w-full h-11" disabled={loading}>
             {loading ? (
               <>

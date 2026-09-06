@@ -5,6 +5,7 @@ export interface RegisterProfileRequest {
   phone: string
   email: string
   address: string
+  password: string
 }
 
 export interface RegisteredUser {

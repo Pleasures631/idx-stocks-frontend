@@ -20,7 +20,7 @@ export function RegisterForm() {
 
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { name: "", phone: "", email: "", address: "" },
+    defaultValues: { name: "", phone: "", email: "", address: "", password: "", confirmPassword: "" },
   })
 
   const onSubmit = async (data: RegisterFormData) => {
@@ -103,6 +103,16 @@ export function RegisterForm() {
               className="min-h-24 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             />
             {form.formState.errors.address && <p className="text-xs text-destructive">{form.formState.errors.address.message}</p>}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Input id="password" type="password" placeholder="At least 8 characters" {...form.register("password")} className="h-11" />
+            {form.formState.errors.password && <p className="text-xs text-destructive">{form.formState.errors.password.message}</p>}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">Confirm password</Label>
+            <Input id="confirmPassword" type="password" {...form.register("confirmPassword")} className="h-11" />
+            {form.formState.errors.confirmPassword && <p className="text-xs text-destructive">{form.formState.errors.confirmPassword.message}</p>}
           </div>
           <Button type="submit" className="h-11 w-full" disabled={loading}>
             {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving profile...</> : "Create profile"}

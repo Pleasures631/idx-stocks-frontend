@@ -398,7 +398,9 @@ export interface LoginRequest {
 
 export interface RegisterRequest {
   name: string
+  phone: string
   email: string
+  address: string
   password: string
 }
 
