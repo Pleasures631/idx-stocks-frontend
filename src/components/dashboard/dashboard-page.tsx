@@ -10,7 +10,7 @@ import { formatPercent, formatBigNumber } from "@/lib/utils"
 import { TrendingUp, TrendingDown, Briefcase, BarChart3, ArrowUpRight } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import type { StockbitForeignDomestic, StockbitIHSGQuote } from "@/types"
+import type { StockbitIHSGChartPoint, StockbitIHSGQuote } from "@/types"
 
 interface Mover {
   ticker: string
@@ -56,7 +56,7 @@ function StockListSkeleton() {
 export function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [ihsg, setIHSG] = useState<StockbitIHSGQuote | null>(null)
-  const [ihsgFlow, setIHSGFlow] = useState<StockbitForeignDomestic[]>([])
+  const [ihsgChart, setIHSGChart] = useState<StockbitIHSGChartPoint[]>([])
   const [movers, setMovers] = useState<{ gainers: Mover[]; losers: Mover[] }>({ gainers: [], losers: [] })
 
   useEffect(() => {
@@ -87,7 +87,10 @@ export function DashboardPage() {
 
   useEffect(() => {
     stocksService.getIHSGQuote().then(setIHSG).catch(() => setIHSG(null))
-    stocksService.getIHSGForeignDomestic().then(setIHSGFlow).catch(() => setIHSGFlow([]))
+    const to = new Date().toISOString().slice(0, 10)
+    const fromDate = new Date()
+    fromDate.setDate(fromDate.getDate() - 7)
+    stocksService.getIHSGChart(fromDate.toISOString().slice(0, 10), to).then(setIHSGChart).catch(() => setIHSGChart([]))
   }, [])
 
   return (
@@ -163,29 +166,21 @@ export function DashboardPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>IHSG Foreign &amp; Domestic Flow</CardTitle>
-          <CardDescription>Net foreign dan domestic berdasarkan snapshot harian dari database</CardDescription>
+          <CardTitle>IHSG Performance</CardTitle>
+          <CardDescription>Intraday price dari snapshot chart Stockbit yang tersimpan di database</CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
             <Skeleton className="h-[280px] w-full rounded-lg" />
-          ) : ihsgFlow.length === 0 ? (
+          ) : ihsgChart.length === 0 ? (
               <div className="flex h-[280px] items-center justify-center text-sm text-muted-foreground">
-                Data flow IHSG belum tersedia. Jalankan fetchdaily untuk mengisi snapshot.
+                Data chart IHSG belum tersedia. Jalankan fetchdaily untuk mengisi snapshot.
               </div>
             ) : (
               <StockLineChart
-                data={ihsgFlow.map((row) => ({
-                  date: row.trade_date.slice(0, 10),
-                  foreign_net: row.foreign_net_value,
-                  domestic_net: row.domestic_net_value,
-                }))}
+                data={ihsgChart.map((row) => ({ date: row.observed_at.slice(11, 16), value: row.value }))}
                 height={280}
-                gradient={false}
-                series={[
-                  { dataKey: "foreign_net", name: "Foreign Net", color: "#ef4444" },
-                  { dataKey: "domestic_net", name: "Domestic Net", color: "#10b981" },
-                ]}
+                color="#a1a1aa"
               />
             )}
         </CardContent>

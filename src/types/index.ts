@@ -113,6 +113,17 @@ export interface StockbitForeignDomestic {
   last_updated: string
 }
 
+export interface StockbitIHSGChartPoint {
+  symbol: string
+  trade_date: string
+  interval: string
+  observed_at: string
+  xlabel: string
+  value: number
+  percentage: number
+  change: number
+}
+
 // --- Broker List ---
 export interface BrokerListItem {
   broker_code: string
