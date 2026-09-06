@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { StockLineChart } from "@/components/charts/line-chart"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { stocksService } from "@/services/stocks"
 import type { StockListItem } from "@/types"
 import { formatPercent, formatBigNumber } from "@/lib/utils"
@@ -17,6 +18,30 @@ interface Mover {
   name: string
   price: number
   change: number
+}
+
+type ChartRange = "today" | "7d" | "30d" | "3m" | "6m" | "1y" | "5y"
+
+const chartRangeLabels: Record<ChartRange, string> = {
+  today: "Hari ini",
+  "7d": "7D",
+  "30d": "30D",
+  "3m": "3 Bulan",
+  "6m": "6 Bulan",
+  "1y": "1 Tahun",
+  "5y": "5 Tahun",
+}
+
+function getChartDates(range: ChartRange) {
+  const to = new Date()
+  const from = new Date(to)
+  if (range === "7d") from.setDate(from.getDate() - 6)
+  if (range === "30d") from.setDate(from.getDate() - 29)
+  if (range === "3m") from.setMonth(from.getMonth() - 3)
+  if (range === "6m") from.setMonth(from.getMonth() - 6)
+  if (range === "1y") from.setFullYear(from.getFullYear() - 1)
+  if (range === "5y") from.setFullYear(from.getFullYear() - 5)
+  return { from: from.toISOString().slice(0, 10), to: to.toISOString().slice(0, 10) }
 }
 
 function StatCardSkeleton() {
@@ -57,6 +82,8 @@ export function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [ihsg, setIHSG] = useState<StockbitIHSGQuote | null>(null)
   const [ihsgChart, setIHSGChart] = useState<StockbitIHSGChartPoint[]>([])
+  const [chartRange, setChartRange] = useState<ChartRange>("1y")
+  const [chartLoading, setChartLoading] = useState(true)
   const [movers, setMovers] = useState<{ gainers: Mover[]; losers: Mover[] }>({ gainers: [], losers: [] })
 
   useEffect(() => {
@@ -87,11 +114,18 @@ export function DashboardPage() {
 
   useEffect(() => {
     stocksService.getIHSGQuote().then(setIHSG).catch(() => setIHSG(null))
-    const to = new Date().toISOString().slice(0, 10)
-    const fromDate = new Date()
-    fromDate.setFullYear(fromDate.getFullYear() - 1)
-    stocksService.getIHSGChart(fromDate.toISOString().slice(0, 10), to).then(setIHSGChart).catch(() => setIHSGChart([]))
   }, [])
+
+  useEffect(() => {
+    let active = true
+    setChartLoading(true)
+    const { from, to } = getChartDates(chartRange)
+    stocksService.getIHSGChart(from, to)
+      .then((data) => { if (active) setIHSGChart(data) })
+      .catch(() => { if (active) setIHSGChart([]) })
+      .finally(() => { if (active) setChartLoading(false) })
+    return () => { active = false }
+  }, [chartRange])
 
   return (
     <div className="space-y-6">
@@ -165,12 +199,24 @@ export function DashboardPage() {
       </div>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-start justify-between gap-4">
+          <div>
           <CardTitle>IHSG Performance</CardTitle>
-          <CardDescription>Harga penutupan harian IHSG selama 1 tahun dari database</CardDescription>
+          <CardDescription>Harga penutupan harian IHSG selama {chartRangeLabels[chartRange].toLowerCase()} dari database</CardDescription>
+          </div>
+          <Select value={chartRange} onValueChange={(value) => setChartRange(value as ChartRange)}>
+            <SelectTrigger className="w-[130px] shrink-0" aria-label="Periode chart IHSG">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {(Object.keys(chartRangeLabels) as ChartRange[]).map((range) => (
+                <SelectItem key={range} value={range}>{chartRangeLabels[range]}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </CardHeader>
         <CardContent>
-          {loading ? (
+          {loading || chartLoading ? (
             <Skeleton className="h-[280px] w-full rounded-lg" />
           ) : ihsgChart.length === 0 ? (
               <div className="flex h-[280px] items-center justify-center text-sm text-muted-foreground">
