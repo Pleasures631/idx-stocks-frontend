@@ -8,12 +8,9 @@ export const loginSchema = z.object({
 
 export const registerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
+  phone: z.string().regex(/^(?:\+62|62|0)8\d{8,11}$/, "Use an Indonesian phone format (08..., 62..., or +62...)"),
   email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  confirmPassword: z.string().min(6, "Please confirm your password"),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"],
+  address: z.string().min(5, "Address must be at least 5 characters").max(500, "Address is too long"),
 })
 
 export const portfolioSchema = z.object({
