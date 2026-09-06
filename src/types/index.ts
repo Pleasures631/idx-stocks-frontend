@@ -139,6 +139,7 @@ export interface BrokerSummaryEntry {
   broker_code: string
   broker_name: string
   broker_type: string
+  broker_group: string
   buy_lot: number
   sell_lot: number
   buy_volume: number

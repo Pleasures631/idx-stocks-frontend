@@ -25,6 +25,13 @@ const RANGES: { key: PriceChartRange; label: string }[] = [
   { key: "1y", label: "1Y" },
 ]
 
+const FLOW_GROUPS = [
+  { key: "FOREIGN", label: "ASING", color: "#3b82f6" },
+  { key: "RETAIL", label: "RITEL", color: "#f59e0b" },
+  { key: "INSTITUTIONAL", label: "INSTITUSI", color: "#a855f7" },
+  { key: "LOCAL_MID", label: "LOKAL MENENGAH", color: "#14b8a6" },
+] as const
+
 function HeaderSkeleton() {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -52,6 +59,7 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
   const [brokerDate, setBrokerDate] = useState<string>("")
   const [presetFromTo, setPresetFromTo] = useState<{ from: string; to: string } | null>(null)
   const [activePresetDays, setActivePresetDays] = useState<number | null>(null)
+  const [selectedFlowGroups, setSelectedFlowGroups] = useState<string[]>([])
   const [detailError, setDetailError] = useState<string | null>(null)
   const [retry, setRetry] = useState(0)
   const [analyze, setAnalyze] = useState<StockAnalyze | null>(null)
@@ -123,6 +131,23 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
     return map
   }, [detail])
 
+  const flowByDate = useMemo(() => {
+    const map = new Map<string, Record<string, number>>()
+    for (const row of detail?.broker_summary ?? []) {
+      const group = row.broker_group?.toUpperCase()
+      if (!group) continue
+      const values = map.get(row.trade_date) ?? {}
+      values[group] = (values[group] ?? 0) + row.net_value
+      map.set(row.trade_date, values)
+    }
+    return map
+  }, [detail])
+
+  const availableFlowGroups = useMemo(
+    () => new Set(Array.from(flowByDate.values()).flatMap((values) => Object.keys(values))),
+    [flowByDate]
+  )
+
   // Preserve the selected broker date across refetches while it is still valid in the
   // new window; only fall back to the newest date when the current selection no longer
   // exists (e.g. a preset/range narrowed the window past it).
@@ -165,6 +190,7 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
     trade_date: p.trade_date,
     displayDate: p.trade_date.slice(8, 10) + "/" + p.trade_date.slice(5, 7),
     value: p.close,
+    ...flowByDate.get(p.trade_date),
   }))
   const volumeData = detail.volume_by_broker
     .slice()
@@ -251,6 +277,25 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
                   </Button>
                 ))}
               </div>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-md border p-3">
+                <span className="text-xs font-medium text-muted-foreground">Flow:</span>
+                {FLOW_GROUPS.map((group) => (
+                  <label key={group.key} className={`flex items-center gap-2 text-xs ${availableFlowGroups.has(group.key) ? "cursor-pointer" : "cursor-not-allowed opacity-50"}`}>
+                    <input
+                      type="checkbox"
+                      className="h-3.5 w-3.5 accent-current"
+                      checked={selectedFlowGroups.includes(group.key)}
+                      disabled={!availableFlowGroups.has(group.key)}
+                      onChange={(event) => setSelectedFlowGroups((current) => (
+                        event.target.checked
+                          ? [...current, group.key]
+                          : current.filter((key) => key !== group.key)
+                      ))}
+                    />
+                    <span style={{ color: group.color }}>{group.label}</span>
+                  </label>
+                ))}
+              </div>
               {rangeLoading ? (
                 <Skeleton className="h-[350px] w-full rounded-lg" />
               ) : (
@@ -259,6 +304,10 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
                   xKey="displayDate"
                   height={350}
                   color="#a1a1aa"
+                  secondarySeries={selectedFlowGroups.map((key) => {
+                    const group = FLOW_GROUPS.find((item) => item.key === key)!
+                    return { dataKey: key, name: group.label, color: group.color }
+                  })}
                   customTooltip={(p) => {
                     if (!p.active || !p.payload?.length) return null
                     const point = p.payload[0].payload as { trade_date: string; value: number }

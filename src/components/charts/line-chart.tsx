@@ -29,6 +29,7 @@ interface LineChartProps {
   gradient?: boolean
   customTooltip?: (props: { active?: boolean; payload?: any[]; label?: string }) => React.ReactNode
   series?: { dataKey: string; color: string; name: string }[]
+  secondarySeries?: { dataKey: string; color: string; name: string }[]
 }
 
 export function StockLineChart({
@@ -40,6 +41,7 @@ export function StockLineChart({
   gradient = true,
   customTooltip,
   series,
+  secondarySeries,
 }: LineChartProps) {
   const gradientId = "lineGradient"
 
@@ -62,17 +64,28 @@ export function StockLineChart({
           tickLine={false}
         />
         <YAxis
+          yAxisId="left"
           tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
           axisLine={false}
           tickLine={false}
           domain={["auto", "auto"]}
         />
+        {secondarySeries?.length ? (
+          <YAxis
+            yAxisId="right"
+            orientation="right"
+            tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
+            axisLine={false}
+            tickLine={false}
+            domain={["auto", "auto"]}
+          />
+        ) : null}
         <Tooltip
           content={customTooltip ? (p) => customTooltip(p as any) : undefined}
           contentStyle={TOOLTIP_CONTENT_STYLE}
         />
         {series?.length ? series.map((item) => (
-          <Line key={item.dataKey} type="monotone" dataKey={item.dataKey} name={item.name} stroke={item.color} strokeWidth={2} dot={false} />
+          <Line key={item.dataKey} type="monotone" dataKey={item.dataKey} name={item.name} stroke={item.color} strokeWidth={2} dot={false} yAxisId="left" />
         )) : (
           <Area
             type="monotone"
@@ -80,8 +93,12 @@ export function StockLineChart({
             stroke={color}
             strokeWidth={2}
             fill={gradient ? `url(#${gradientId})` : "none"}
+            yAxisId="left"
           />
         )}
+        {secondarySeries?.map((item) => (
+          <Line key={item.dataKey} type="monotone" dataKey={item.dataKey} name={item.name} stroke={item.color} strokeWidth={2} dot={false} yAxisId="right" />
+        ))}
       </AreaChart>
     </ResponsiveContainer>
   )
