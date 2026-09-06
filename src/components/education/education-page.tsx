@@ -5,6 +5,7 @@ import { BookOpen, GraduationCap, Loader2 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { educationService, type EducationArticle } from "@/services/education"
+import { educationLevels } from "@/lib/education"
 
 export function EducationPage() {
   const [articles, setArticles] = useState<EducationArticle[]>([])
@@ -15,7 +16,8 @@ export function EducationPage() {
     educationService.list().then(setArticles).catch(() => setError("Materi edukasi belum tersedia.")).finally(() => setLoading(false))
   }, [])
 
-  const levels = Array.from(new Map(articles.map(article => [article.level, article.level_title])).entries())
+  const titleOverrides = new Map(educationLevels.flatMap(level => level.lessons.map(lesson => [lesson.href.split("/").filter(Boolean).pop(), lesson.title] as const)))
+  const levels = Array.from(new Map(articles.map(article => [article.level, article.level_title])).entries()).sort(([a], [b]) => a - b)
 
   return (
     <div className="space-y-6">
@@ -46,7 +48,7 @@ export function EducationPage() {
                     <li key={article.slug}>
                       <Link href={`/education/${article.slug}`} className="flex items-center gap-2 rounded-md px-2 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
                         <BookOpen className="h-4 w-4 shrink-0 text-primary/70" />
-                        <span>{article.title}</span>
+                        <span>{titleOverrides.get(article.slug) || article.title}</span>
                       </Link>
                     </li>
                   ))}
