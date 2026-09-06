@@ -32,6 +32,8 @@ const FLOW_GROUPS = [
   { key: "LOCAL_MID", label: "LOKAL MENENGAH", color: "#14b8a6" },
 ] as const
 
+type BrokerFilterMode = "latest" | "7d" | "30d" | "3m" | "custom"
+
 function HeaderSkeleton() {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -58,7 +60,9 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
   const [rangeLoading, setRangeLoading] = useState(false)
   const [brokerDate, setBrokerDate] = useState<string>("")
   const [presetFromTo, setPresetFromTo] = useState<{ from: string; to: string } | null>(null)
-  const [activePresetDays, setActivePresetDays] = useState<number | null>(null)
+  const [brokerFilterMode, setBrokerFilterMode] = useState<BrokerFilterMode>("latest")
+  const [customFrom, setCustomFrom] = useState("")
+  const [customTo, setCustomTo] = useState("")
   const [selectedFlowGroups, setSelectedFlowGroups] = useState<string[]>([])
   const [detailError, setDetailError] = useState<string | null>(null)
   const [retry, setRetry] = useState(0)
@@ -198,9 +202,32 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
     .slice(0, 8)
     .map((b) => ({ name: b.broker_name, buy: b.buy_volume, sell: b.sell_volume }))
   const activeBrokerDate = brokerDates.includes(brokerDate) ? brokerDate : brokerDates[0]
-  const brokerRows = detail.broker_summary
-    .filter((b) => b.trade_date === activeBrokerDate)
-    .sort((a, b) => Math.abs(b.net_value) - Math.abs(a.net_value))
+  const brokerRows = (() => {
+    const source = detail.broker_summary
+    if (brokerFilterMode === "latest") {
+      return source
+        .filter((b) => b.trade_date === activeBrokerDate)
+        .sort((a, b) => Math.abs(b.net_value) - Math.abs(a.net_value))
+    }
+
+    const byBroker = new Map<string, BrokerSummaryEntry>()
+    for (const row of source) {
+      const current = byBroker.get(row.broker_code)
+      if (!current) {
+        byBroker.set(row.broker_code, { ...row })
+        continue
+      }
+      current.buy_lot += row.buy_lot
+      current.sell_lot += row.sell_lot
+      current.buy_volume += row.buy_volume
+      current.sell_volume += row.sell_volume
+      current.buy_value += row.buy_value
+      current.sell_value += row.sell_value
+      current.net_value += row.net_value
+      current.frequency += row.frequency
+    }
+    return Array.from(byBroker.values()).sort((a, b) => Math.abs(b.net_value) - Math.abs(a.net_value))
+  })()
   const buyBrokerRows = brokerRows
     .filter((broker) => broker.buy_volume > 0 || broker.buy_value > 0)
     .slice()
@@ -219,11 +246,29 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
     const to = new Date()
     const from = addDays(to, -(days - 1))
     setPresetFromTo({ from: format(from, "yyyy-MM-dd"), to: format(to, "yyyy-MM-dd") })
-    setActivePresetDays(days)
+    setBrokerFilterMode(days === 7 ? "7d" : days === 30 ? "30d" : "3m")
   }
 
-  const presetLabel =
-    activePresetDays === 7 ? "Last 7 Days" : activePresetDays === 30 ? "Last 30 Days" : activePresetDays === 90 ? "Last 3 Months" : null
+  const applyCustomRange = () => {
+    if (!customFrom || !customTo || customFrom > customTo) return
+    setPresetFromTo({ from: customFrom, to: customTo })
+    setBrokerFilterMode("custom")
+  }
+
+  const selectLatestDate = (date: string) => {
+    setBrokerDate(date)
+    setBrokerFilterMode("latest")
+  }
+
+  const brokerFilterLabel = brokerFilterMode === "latest"
+    ? "Latest"
+    : brokerFilterMode === "7d"
+      ? "Last 7 Days"
+      : brokerFilterMode === "30d"
+        ? "Last 30 Days"
+        : brokerFilterMode === "3m"
+          ? "Last 3 Months"
+          : "Custom Range"
 
   return (
     <div className="space-y-6">
@@ -268,7 +313,6 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
                     onClick={() => {
                       setRange(r.key)
                       setPresetFromTo(null)
-                      setActivePresetDays(null)
                     }}
                     disabled={rangeLoading}
                   >
@@ -392,8 +436,8 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
                   <Button
                     variant="outline"
                     size="icon"
-                    onClick={() => prevDate && setBrokerDate(prevDate)}
-                    disabled={!prevDate}
+                    onClick={() => prevDate && selectLatestDate(prevDate)}
+                    disabled={!prevDate || brokerFilterMode !== "latest"}
                     aria-label="Previous day"
                   >
                     <ChevronLeft className="h-4 w-4" />
@@ -401,11 +445,14 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="outline" className="w-[150px] justify-between">
-                        {activeBrokerDate ?? "No data"}
+                        {brokerFilterLabel}
                         <ChevronDown className="h-4 w-4 opacity-50" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="max-h-[280px] overflow-y-auto">
+                      <DropdownMenuItem onSelect={() => brokerDates[0] && selectLatestDate(brokerDates[0])}>
+                        Latest
+                      </DropdownMenuItem>
                       <DropdownMenuItem onSelect={() => applyPreset(7)}>
                         Last 7 Days
                       </DropdownMenuItem>
@@ -423,7 +470,7 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
                           {brokerDates.slice(0, 15).map((date) => (
                             <DropdownMenuItem
                               key={date}
-                              onSelect={() => setBrokerDate(date)}
+                              onSelect={() => selectLatestDate(date)}
                               className={date === activeBrokerDate ? "bg-accent" : undefined}
                             >
                               {date}
@@ -436,17 +483,41 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
                   <Button
                     variant="outline"
                     size="icon"
-                    onClick={() => nextDate && setBrokerDate(nextDate)}
-                    disabled={!nextDate}
+                    onClick={() => nextDate && selectLatestDate(nextDate)}
+                    disabled={!nextDate || brokerFilterMode !== "latest"}
                     aria-label="Next day"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>
-                  {presetFromTo && presetLabel && (
+                  {presetFromTo && brokerFilterMode !== "latest" && (
                     <Badge variant="outline" className="ml-2">
-                      {presetLabel} · {presetFromTo.from} – {presetFromTo.to}
+                      {presetFromTo.from} – {presetFromTo.to}
                     </Badge>
                   )}
+                </div>
+                <div className="flex flex-wrap items-end gap-2">
+                  <label className="space-y-1 text-xs text-muted-foreground">
+                    <span className="block">Start</span>
+                    <input
+                      type="date"
+                      value={customFrom}
+                      onChange={(event) => setCustomFrom(event.target.value)}
+                      className="h-9 rounded-md border border-input bg-background px-2 text-sm text-foreground"
+                    />
+                  </label>
+                  <label className="space-y-1 text-xs text-muted-foreground">
+                    <span className="block">End</span>
+                    <input
+                      type="date"
+                      value={customTo}
+                      min={customFrom || undefined}
+                      onChange={(event) => setCustomTo(event.target.value)}
+                      className="h-9 rounded-md border border-input bg-background px-2 text-sm text-foreground"
+                    />
+                  </label>
+                  <Button variant="outline" size="sm" onClick={applyCustomRange} disabled={!customFrom || !customTo || customFrom > customTo}>
+                    Apply
+                  </Button>
                 </div>
                 <div>
                   <CardTitle>Broker Summary</CardTitle>
