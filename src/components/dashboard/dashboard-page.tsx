@@ -4,13 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { StockLineChart } from "@/components/charts/line-chart"
-import { mockIHSGData } from "@/lib/mock"
 import { stocksService } from "@/services/stocks"
 import type { StockListItem } from "@/types"
 import { formatPercent, formatBigNumber } from "@/lib/utils"
 import { TrendingUp, TrendingDown, Briefcase, BarChart3, ArrowUpRight } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
+import type { StockbitForeignDomestic, StockbitIHSGQuote } from "@/types"
 
 interface Mover {
   ticker: string
@@ -55,6 +55,8 @@ function StockListSkeleton() {
 
 export function DashboardPage() {
   const [loading, setLoading] = useState(true)
+  const [ihsg, setIHSG] = useState<StockbitIHSGQuote | null>(null)
+  const [ihsgFlow, setIHSGFlow] = useState<StockbitForeignDomestic[]>([])
   const [movers, setMovers] = useState<{ gainers: Mover[]; losers: Mover[] }>({ gainers: [], losers: [] })
 
   useEffect(() => {
@@ -83,6 +85,11 @@ export function DashboardPage() {
     }
   }, [])
 
+  useEffect(() => {
+    stocksService.getIHSGQuote().then(setIHSG).catch(() => setIHSG(null))
+    stocksService.getIHSGForeignDomestic().then(setIHSGFlow).catch(() => setIHSGFlow([]))
+  }, [])
+
   return (
     <div className="space-y-6">
       <div>
@@ -106,9 +113,10 @@ export function DashboardPage() {
                 <BarChart3 className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">7,400</div>
-                <p className="text-xs text-emerald-500 flex items-center gap-1">
-                  <TrendingUp className="h-3 w-3" /> +0.68% from yesterday
+                <div className="text-2xl font-bold">{ihsg?.price ?? "—"}</div>
+                <p className={`text-xs flex items-center gap-1 ${ihsg && Number(ihsg.change_pct.replace(",", ".")) < 0 ? "text-red-500" : "text-emerald-500"}`}>
+                  {ihsg && Number(ihsg.change_pct.replace(",", ".")) < 0 ? <TrendingDown className="h-3 w-3" /> : <TrendingUp className="h-3 w-3" />}
+                  {ihsg ? `${ihsg.change} (${ihsg.change_pct}%)` : "Data IHSG belum tersedia"}
                 </p>
               </CardContent>
             </Card>
@@ -155,15 +163,31 @@ export function DashboardPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>IHSG Performance</CardTitle>
-          <CardDescription>Composite Index - Last 8 trading days</CardDescription>
+          <CardTitle>IHSG Foreign &amp; Domestic Flow</CardTitle>
+          <CardDescription>Net foreign dan domestic berdasarkan snapshot harian dari database</CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
             <Skeleton className="h-[280px] w-full rounded-lg" />
-          ) : (
-            <StockLineChart data={mockIHSGData} color="#a1a1aa" height={280} />
-          )}
+          ) : ihsgFlow.length === 0 ? (
+              <div className="flex h-[280px] items-center justify-center text-sm text-muted-foreground">
+                Data flow IHSG belum tersedia. Jalankan fetchdaily untuk mengisi snapshot.
+              </div>
+            ) : (
+              <StockLineChart
+                data={ihsgFlow.map((row) => ({
+                  date: row.trade_date.slice(0, 10),
+                  foreign_net: row.foreign_net_value,
+                  domestic_net: row.domestic_net_value,
+                }))}
+                height={280}
+                gradient={false}
+                series={[
+                  { dataKey: "foreign_net", name: "Foreign Net", color: "#ef4444" },
+                  { dataKey: "domestic_net", name: "Domestic Net", color: "#10b981" },
+                ]}
+              />
+            )}
         </CardContent>
       </Card>
 

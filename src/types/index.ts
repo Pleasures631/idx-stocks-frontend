@@ -80,6 +80,39 @@ export interface StockListItem {
   volume: number
 }
 
+export interface StockbitIHSGQuote {
+  symbol: string
+  name: string
+  price: string
+  change: string
+  change_pct: string
+  as_of: string
+  volume: string
+  average_volume: string
+  source_url: string
+}
+
+export interface StockbitForeignDomestic {
+  symbol: string
+  trade_date: string
+  market_type: string
+  foreign_buy_value: number
+  foreign_sell_value: number
+  domestic_buy_value: number
+  domestic_sell_value: number
+  foreign_net_value: number
+  domestic_net_value: number
+  foreign_buy_volume: number
+  foreign_sell_volume: number
+  domestic_buy_volume: number
+  domestic_sell_volume: number
+  foreign_buy_frequency: number
+  foreign_sell_frequency: number
+  domestic_buy_frequency: number
+  domestic_sell_frequency: number
+  last_updated: string
+}
+
 // --- Broker List ---
 export interface BrokerListItem {
   broker_code: string

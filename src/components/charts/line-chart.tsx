@@ -28,6 +28,7 @@ interface LineChartProps {
   color?: string
   gradient?: boolean
   customTooltip?: (props: { active?: boolean; payload?: any[]; label?: string }) => React.ReactNode
+  series?: { dataKey: string; color: string; name: string }[]
 }
 
 export function StockLineChart({
@@ -38,6 +39,7 @@ export function StockLineChart({
   color = "#fff",
   gradient = true,
   customTooltip,
+  series,
 }: LineChartProps) {
   const gradientId = "lineGradient"
 
@@ -69,13 +71,17 @@ export function StockLineChart({
           content={customTooltip ? (p) => customTooltip(p as any) : undefined}
           contentStyle={TOOLTIP_CONTENT_STYLE}
         />
-        <Area
-          type="monotone"
-          dataKey={yKey}
-          stroke={color}
-          strokeWidth={2}
-          fill={gradient ? `url(#${gradientId})` : "none"}
-        />
+        {series?.length ? series.map((item) => (
+          <Line key={item.dataKey} type="monotone" dataKey={item.dataKey} name={item.name} stroke={item.color} strokeWidth={2} dot={false} />
+        )) : (
+          <Area
+            type="monotone"
+            dataKey={yKey}
+            stroke={color}
+            strokeWidth={2}
+            fill={gradient ? `url(#${gradientId})` : "none"}
+          />
+        )}
       </AreaChart>
     </ResponsiveContainer>
   )

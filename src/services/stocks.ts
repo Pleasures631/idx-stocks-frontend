@@ -1,5 +1,5 @@
 import apiClient from "@/lib/api-client"
-import type { StockListItem, BrokerListItem, TickerDetail, PriceChartRange, StockAnalyze } from "@/types"
+import type { StockListItem, BrokerListItem, TickerDetail, PriceChartRange, StockAnalyze, StockbitIHSGQuote, StockbitForeignDomestic } from "@/types"
 
 export interface TickerDetailParams {
   range?: PriceChartRange
@@ -8,6 +8,22 @@ export interface TickerDetailParams {
 }
 
 export const stocksService = {
+  async getIHSGQuote(): Promise<StockbitIHSGQuote> {
+    const response = await apiClient.get<{ success: boolean; data: StockbitIHSGQuote }>(
+      "/market/ihsg",
+      { skipLoading: true }
+    )
+    return response.data.data
+  },
+
+  async getIHSGForeignDomestic(): Promise<StockbitForeignDomestic[]> {
+    const response = await apiClient.get<{ success: boolean; data: StockbitForeignDomestic[] }>(
+      "/market/ihsg/foreign-domestic",
+      { skipLoading: true }
+    )
+    return response.data.data
+  },
+
   async getStockList(): Promise<StockListItem[]> {
     const response = await apiClient.get<{ success: boolean; total: number; data: StockListItem[] }>(
       "/stocks/list",
