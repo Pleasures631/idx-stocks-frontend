@@ -3,6 +3,7 @@
 import {
   BarChart,
   Bar,
+  Legend,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -11,7 +12,7 @@ import {
 } from "recharts"
 
 interface BarChartProps {
-  data: { name: string; value: number }[]
+  data: { name: string; value?: number; buy?: number; sell?: number }[]
   height?: number
   color?: string
 }
@@ -40,7 +41,15 @@ export function VolumeBarChart({ data, height = 200, color = "#52525b" }: BarCha
             color: "hsl(var(--popover-foreground))",
           }}
         />
-        <Bar dataKey="value" fill={color} radius={[4, 4, 0, 0]} />
+        {data.some((item) => item.buy !== undefined || item.sell !== undefined) ? (
+          <>
+            <Legend />
+            <Bar dataKey="buy" name="Buy" fill="#22c55e" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="sell" name="Sell" fill="#ef4444" radius={[4, 4, 0, 0]} />
+          </>
+        ) : (
+          <Bar dataKey="value" fill={color} radius={[4, 4, 0, 0]} />
+        )}
       </BarChart>
     </ResponsiveContainer>
   )

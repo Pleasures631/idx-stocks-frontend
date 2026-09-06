@@ -196,7 +196,7 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
     .slice()
     .sort((a, b) => b.buy_volume + b.sell_volume - (a.buy_volume + a.sell_volume))
     .slice(0, 8)
-    .map((b) => ({ name: b.broker_name, value: b.buy_volume + b.sell_volume }))
+    .map((b) => ({ name: b.broker_name, buy: b.buy_volume, sell: b.sell_volume }))
   const activeBrokerDate = brokerDates.includes(brokerDate) ? brokerDate : brokerDates[0]
   const brokerRows = detail.broker_summary
     .filter((b) => b.trade_date === activeBrokerDate)
@@ -248,7 +248,6 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
       <Tabs defaultValue="chart" className="w-full">
         <TabsList className="w-full sm:w-auto">
           <TabsTrigger value="chart" className="flex-1 sm:flex-none">Price Chart</TabsTrigger>
-          <TabsTrigger value="volume" className="flex-1 sm:flex-none">Volume</TabsTrigger>
           <TabsTrigger value="brokers" className="flex-1 sm:flex-none">Broker Summary</TabsTrigger>
           <TabsTrigger value="analyze" className="flex-1 sm:flex-none">Analisis Broker Flow</TabsTrigger>
         </TabsList>
@@ -365,18 +364,15 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
               )}
             </CardContent>
           </Card>
-        </TabsContent>
-
-        <TabsContent value="volume">
-          <Card>
-            <CardHeader>
-              <CardTitle>Volume Distribution</CardTitle>
-              <CardDescription>Top brokers by traded volume</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <VolumeBarChart data={volumeData} height={300} />
-            </CardContent>
-          </Card>
+            <Card className="mt-4">
+              <CardHeader>
+                <CardTitle>Volume Distribution</CardTitle>
+                <CardDescription>Top brokers by traded volume</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <VolumeBarChart data={volumeData} height={300} />
+              </CardContent>
+            </Card>
         </TabsContent>
 
         <TabsContent value="brokers">
