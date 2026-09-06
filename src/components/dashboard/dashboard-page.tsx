@@ -10,6 +10,7 @@ import { formatPercent, formatBigNumber } from "@/lib/utils"
 import { TrendingUp, TrendingDown, Briefcase, BarChart3, ArrowUpRight } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
+import { TradingViewTickerTape } from "@/components/dashboard/tradingview-ticker-tape"
 import type { StockbitIHSGChartPoint, StockbitIHSGQuote } from "@/types"
 
 interface Mover {
@@ -100,6 +101,8 @@ export function DashboardPage() {
         <p className="text-muted-foreground">Market overview and portfolio summary</p>
       </div>
 
+      <TradingViewTickerTape />
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {loading ? (
           <>
@@ -167,7 +170,7 @@ export function DashboardPage() {
       <Card>
         <CardHeader>
           <CardTitle>IHSG Performance</CardTitle>
-          <CardDescription>Intraday price dari snapshot chart Stockbit yang tersimpan di database</CardDescription>
+          <CardDescription>Harga penutupan harian dari chart Stockbit yang tersimpan di database</CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -178,7 +181,7 @@ export function DashboardPage() {
               </div>
             ) : (
               <StockLineChart
-                data={ihsgChart.map((row) => ({ date: row.observed_at.slice(11, 16), value: row.value }))}
+                data={ihsgChart.map((row) => ({ date: row.trade_date.slice(0, 10), value: row.value }))}
                 height={280}
                 color="#a1a1aa"
               />
