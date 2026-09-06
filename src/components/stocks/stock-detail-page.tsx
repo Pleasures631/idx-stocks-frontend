@@ -295,6 +295,15 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
                   </label>
                 ))}
               </div>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground" aria-label="Price chart flow legend">
+                <span className="font-medium">Legend:</span>
+                {FLOW_GROUPS.map((group) => (
+                  <span key={group.key} className="inline-flex items-center gap-1.5">
+                    <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: group.color }} aria-hidden="true" />
+                    {group.label}
+                  </span>
+                ))}
+              </div>
               {rangeLoading ? (
                 <Skeleton className="h-[350px] w-full rounded-lg" />
               ) : (

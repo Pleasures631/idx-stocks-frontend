@@ -208,6 +208,9 @@ export interface StockAnalyze {
   smart_money_ratio: number
   retail_dominance: number
   top1_concentration: number
+  buy_hhi: number
+  sell_hhi: number
+  total_hhi: number
   foreign_leadership: boolean
   smart_money_active_days: number
   smart_money_consistency: number

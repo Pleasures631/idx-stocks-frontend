@@ -84,22 +84,59 @@ export function BrokerFlowAnalysis({ analyze }: BrokerFlowAnalysisProps) {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="outline">Smart Money Ratio: {analyze.smart_money_ratio.toFixed(2)}</Badge>
-          <Badge variant="outline">Smart Money Active: {analyze.smart_money_active_days} / {analyze.total_days} hari</Badge>
-          <Badge variant="outline">Konsistensi: {analyze.smart_money_consistency.toFixed(0)}%</Badge>
+          <Badge
+            variant="outline"
+            title="Perbandingan kontribusi net flow Foreign dan Institutional terhadap total net flow. Nilai lebih tinggi berarti smart money lebih dominan."
+          >
+            Smart Money Ratio: {analyze.smart_money_ratio.toFixed(2)}
+          </Badge>
+          <Badge
+            variant="outline"
+            title="Jumlah hari ketika gabungan Foreign dan Institutional mencatat net buy dalam periode analisis."
+          >
+            Smart Money Active: {analyze.smart_money_active_days} / {analyze.total_days} hari
+          </Badge>
+          <Badge
+            variant="outline"
+            title="Persentase hari aktif smart money dibandingkan total hari aktif pada periode analisis."
+          >
+            Konsistensi: {analyze.smart_money_consistency.toFixed(0)}%
+          </Badge>
+          <Badge
+            variant="outline"
+            title="HHI Buy mengukur seberapa terkonsentrasi nilai beli pada broker tertentu. Skala 0-10.000; makin tinggi berarti makin terkonsentrasi."
+          >
+            HHI Buy: {(analyze.buy_hhi ?? 0).toFixed(0)}
+          </Badge>
+          <Badge
+            variant="outline"
+            title="HHI Sell mengukur seberapa terkonsentrasi nilai jual pada broker tertentu. Skala 0-10.000; makin tinggi berarti makin terkonsentrasi."
+          >
+            HHI Sell: {(analyze.sell_hhi ?? 0).toFixed(0)}
+          </Badge>
+          <Badge
+            variant="outline"
+            title="HHI Total mengukur konsentrasi gabungan nilai beli dan jual seluruh broker. Skala 0-10.000; makin tinggi berarti makin terkonsentrasi."
+          >
+            HHI Total: {(analyze.total_hhi ?? 0).toFixed(0)}
+          </Badge>
           {signals.map((s) => (
-            <Badge key={s.label} variant={s.on ? "success" : "destructive"}>
+            <Badge
+              key={s.label}
+              variant={s.on ? "success" : "destructive"}
+              title={s.description}
+            >
               {s.label}
             </Badge>
           ))}
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <FlowTable title="Brokers Akumulasi" rows={analyze.brokers_accumulation} />
-          <FlowTable title="Brokers Distribusi" rows={analyze.brokers_distribution} />
+          <FlowTable title="Brokers Akumulasi" rows={accumulation} />
+          <FlowTable title="Brokers Distribusi" rows={distribution} />
         </div>
 
-        {analyze.anomalies.length > 0 && (
+        {anomalies.length > 0 && (
           <div className="space-y-2">
             <h4 className="text-sm font-semibold">Anomali</h4>
             <Table>
