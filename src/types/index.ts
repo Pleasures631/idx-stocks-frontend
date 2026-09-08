@@ -147,6 +147,8 @@ export interface BrokerSummaryEntry {
   buy_value: number
   sell_value: number
   net_value: number
+  buy_avg_price: number
+  sell_avg_price: number
   frequency: number
 }
 
@@ -184,6 +186,8 @@ export interface AnalyzeBrokerFlow {
   buy_lot: number
   sell_lot: number
   net_lot: number
+  buy_avg_price: number
+  sell_avg_price: number
   active_days: number
   formatted_net_value: string
   display_status: string

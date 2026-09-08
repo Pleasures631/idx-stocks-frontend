@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { formatBigNumber } from "@/lib/utils"
+import { formatBigNumber, formatIDR } from "@/lib/utils"
 import type { StockAnalyze, AnalyzeBrokerFlow } from "@/types"
 
 interface BrokerFlowAnalysisProps {
@@ -25,7 +25,9 @@ function StatItem({ label, value, tone }: { label: string; value: string; tone?:
   )
 }
 
-function FlowTable({ title, rows }: { title: string; rows: AnalyzeBrokerFlow[] }) {
+function FlowTable({ title, rows, side }: { title: string; rows: AnalyzeBrokerFlow[]; side: "buy" | "sell" }) {
+  const priceLabel = side === "buy" ? "Avg Buy" : "Avg Sell"
+
   return (
     <div className="space-y-2">
       <h4 className="text-sm font-semibold">{title}</h4>
@@ -34,6 +36,7 @@ function FlowTable({ title, rows }: { title: string; rows: AnalyzeBrokerFlow[] }
           <TableRow>
             <TableHead>Broker</TableHead>
             <TableHead className="text-right">Net</TableHead>
+            <TableHead className="text-right">{priceLabel}</TableHead>
             <TableHead className="text-right">Active Days</TableHead>
           </TableRow>
         </TableHeader>
@@ -45,6 +48,11 @@ function FlowTable({ title, rows }: { title: string; rows: AnalyzeBrokerFlow[] }
                 <div className="text-xs text-muted-foreground">{row.broker_type}</div>
               </TableCell>
               <TableCell className={`text-right font-medium ${flowTone(row.net_value)}`}>{row.formatted_net_value}</TableCell>
+              <TableCell className="text-right">
+                {(side === "buy" ? row.buy_avg_price : row.sell_avg_price) > 0
+                  ? formatIDR(side === "buy" ? row.buy_avg_price : row.sell_avg_price)
+                  : "—"}
+              </TableCell>
               <TableCell className="text-right">{row.active_days}</TableCell>
             </TableRow>
           ))}
@@ -55,11 +63,14 @@ function FlowTable({ title, rows }: { title: string; rows: AnalyzeBrokerFlow[] }
 }
 
 export function BrokerFlowAnalysis({ analyze }: BrokerFlowAnalysisProps) {
+  const accumulation = analyze.brokers_accumulation ?? []
+  const distribution = analyze.brokers_distribution ?? []
+  const anomalies = analyze.anomalies ?? []
   const signals = [
-    { label: "Foreign Leadership", on: analyze.foreign_leadership },
-    { label: "Price Confirms", on: analyze.price_confirms },
-    { label: "Volume Spike", on: analyze.has_volume_spike },
-    { label: "Momentum Accelerating", on: analyze.momentum_accelerating },
+    { label: "Foreign Leadership", on: analyze.foreign_leadership, description: "Broker/group Foreign menjadi pemimpin net flow pada periode analisis." },
+    { label: "Price Confirms", on: analyze.price_confirms, description: "Arah net flow smart money sejalan dengan perubahan harga saham." },
+    { label: "Volume Spike", on: analyze.has_volume_spike, description: "Rata-rata volume perdagangan periode analisis meningkat signifikan dibanding baseline." },
+    { label: "Momentum Accelerating", on: analyze.momentum_accelerating, description: "Net buying smart money lebih besar pada paruh kedua periode analisis." },
   ]
 
   return (
@@ -132,8 +143,8 @@ export function BrokerFlowAnalysis({ analyze }: BrokerFlowAnalysisProps) {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <FlowTable title="Brokers Akumulasi" rows={accumulation} />
-          <FlowTable title="Brokers Distribusi" rows={distribution} />
+          <FlowTable title="Brokers Akumulasi" rows={accumulation} side="buy" />
+          <FlowTable title="Brokers Distribusi" rows={distribution} side="sell" />
         </div>
 
         {anomalies.length > 0 && (

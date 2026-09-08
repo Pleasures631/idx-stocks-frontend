@@ -53,6 +53,16 @@ interface StockDetailPageProps {
   ticker: string
 }
 
+function mergeWeightedAveragePrice(currentPrice: number, currentValue: number, nextPrice: number, nextValue: number) {
+  const currentQuantity = currentPrice > 0 ? Math.abs(currentValue) / currentPrice : 0
+  const nextQuantity = nextPrice > 0 ? Math.abs(nextValue) / nextPrice : 0
+  const totalQuantity = currentQuantity + nextQuantity
+  if (totalQuantity === 0) return 0
+
+  const pricedValue = (currentPrice > 0 ? Math.abs(currentValue) : 0) + (nextPrice > 0 ? Math.abs(nextValue) : 0)
+  return pricedValue / totalQuantity
+}
+
 export function StockDetailPage({ ticker }: StockDetailPageProps) {
   const [detail, setDetail] = useState<TickerDetail | null>(null)
   const [loading, setLoading] = useState(true)
@@ -217,6 +227,8 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
         byBroker.set(row.broker_code, { ...row })
         continue
       }
+      const buyAvgPrice = mergeWeightedAveragePrice(current.buy_avg_price, current.buy_value, row.buy_avg_price, row.buy_value)
+      const sellAvgPrice = mergeWeightedAveragePrice(current.sell_avg_price, current.sell_value, row.sell_avg_price, row.sell_value)
       current.buy_lot += row.buy_lot
       current.sell_lot += row.sell_lot
       current.buy_volume += row.buy_volume
@@ -224,6 +236,8 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
       current.buy_value += row.buy_value
       current.sell_value += row.sell_value
       current.net_value += row.net_value
+      current.buy_avg_price = buyAvgPrice
+      current.sell_avg_price = sellAvgPrice
       current.frequency += row.frequency
     }
     return Array.from(byBroker.values()).sort((a, b) => Math.abs(b.net_value) - Math.abs(a.net_value))
@@ -542,12 +556,13 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
                         <TableRow>
                           <TableHead>Broker</TableHead>
                           <TableHead className="text-right">Value</TableHead>
+                          <TableHead className="text-right">Avg Buy</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {buyBrokerRows.length === 0 ? (
                           <TableRow>
-                            <TableCell colSpan={2} className="py-6 text-center text-sm text-muted-foreground">
+                            <TableCell colSpan={3} className="py-6 text-center text-sm text-muted-foreground">
                               Tidak ada data buy
                             </TableCell>
                           </TableRow>
@@ -559,6 +574,7 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
                                 <div className="text-xs text-muted-foreground">{broker.broker_type} · {broker.broker_code}</div>
                               </TableCell>
                               <TableCell className="text-right">{formatIDR(broker.buy_value)}</TableCell>
+                              <TableCell className="text-right">{broker.buy_avg_price > 0 ? formatIDR(broker.buy_avg_price) : "—"}</TableCell>
                             </TableRow>
                           ))
                         )}
@@ -576,12 +592,13 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
                         <TableRow>
                           <TableHead>Broker</TableHead>
                           <TableHead className="text-right">Value</TableHead>
+                          <TableHead className="text-right">Avg Sell</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {sellBrokerRows.length === 0 ? (
                           <TableRow>
-                            <TableCell colSpan={2} className="py-6 text-center text-sm text-muted-foreground">
+                            <TableCell colSpan={3} className="py-6 text-center text-sm text-muted-foreground">
                               Tidak ada data sell
                             </TableCell>
                           </TableRow>
@@ -593,6 +610,7 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
                                 <div className="text-xs text-muted-foreground">{broker.broker_type} · {broker.broker_code}</div>
                               </TableCell>
                               <TableCell className="text-right">{formatIDR(broker.sell_value)}</TableCell>
+                              <TableCell className="text-right">{broker.sell_avg_price > 0 ? formatIDR(broker.sell_avg_price) : "—"}</TableCell>
                             </TableRow>
                           ))
                         )}
