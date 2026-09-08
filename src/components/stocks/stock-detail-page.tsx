@@ -231,11 +231,11 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
   const buyBrokerRows = brokerRows
     .filter((broker) => broker.buy_volume > 0 || broker.buy_value > 0)
     .slice()
-    .sort((a, b) => b.buy_volume - a.buy_volume)
+    .sort((a, b) => b.buy_value - a.buy_value)
   const sellBrokerRows = brokerRows
     .filter((broker) => broker.sell_volume > 0 || broker.sell_value > 0)
     .slice()
-    .sort((a, b) => b.sell_volume - a.sell_volume)
+    .sort((a, b) => b.sell_value - a.sell_value)
 
   // brokerDates tersortir descending (terbaru dulu). ◀ = ke hari sebelumnya (index +1), ▶ = hari berikutnya (index -1).
   const dateIndex = activeBrokerDate ? brokerDates.indexOf(activeBrokerDate) : -1
@@ -535,20 +535,19 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
                   <div className="rounded-lg border border-border/60">
                     <div className="border-b border-border/60 px-4 py-3">
                       <h3 className="text-sm font-semibold text-emerald-500">Broker Buy</h3>
-                      <p className="text-xs text-muted-foreground">Diurutkan berdasarkan volume beli</p>
+                      <p className="text-xs text-muted-foreground">Diurutkan berdasarkan nilai beli</p>
                     </div>
                     <Table>
                       <TableHeader>
                         <TableRow>
                           <TableHead>Broker</TableHead>
-                          <TableHead className="text-right">Volume</TableHead>
                           <TableHead className="text-right">Value</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {buyBrokerRows.length === 0 ? (
                           <TableRow>
-                            <TableCell colSpan={3} className="py-6 text-center text-sm text-muted-foreground">
+                            <TableCell colSpan={2} className="py-6 text-center text-sm text-muted-foreground">
                               Tidak ada data buy
                             </TableCell>
                           </TableRow>
@@ -559,7 +558,6 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
                                 <div className="font-medium">{broker.broker_name}</div>
                                 <div className="text-xs text-muted-foreground">{broker.broker_type} · {broker.broker_code}</div>
                               </TableCell>
-                              <TableCell className="text-right">{formatBigNumber(broker.buy_volume)}</TableCell>
                               <TableCell className="text-right">{formatIDR(broker.buy_value)}</TableCell>
                             </TableRow>
                           ))
@@ -571,20 +569,19 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
                   <div className="rounded-lg border border-border/60">
                     <div className="border-b border-border/60 px-4 py-3">
                       <h3 className="text-sm font-semibold text-red-500">Broker Sell</h3>
-                      <p className="text-xs text-muted-foreground">Diurutkan berdasarkan volume jual</p>
+                      <p className="text-xs text-muted-foreground">Diurutkan berdasarkan nilai jual</p>
                     </div>
                     <Table>
                       <TableHeader>
                         <TableRow>
                           <TableHead>Broker</TableHead>
-                          <TableHead className="text-right">Volume</TableHead>
                           <TableHead className="text-right">Value</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {sellBrokerRows.length === 0 ? (
                           <TableRow>
-                            <TableCell colSpan={3} className="py-6 text-center text-sm text-muted-foreground">
+                            <TableCell colSpan={2} className="py-6 text-center text-sm text-muted-foreground">
                               Tidak ada data sell
                             </TableCell>
                           </TableRow>
@@ -595,7 +592,6 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
                                 <div className="font-medium">{broker.broker_name}</div>
                                 <div className="text-xs text-muted-foreground">{broker.broker_type} · {broker.broker_code}</div>
                               </TableCell>
-                              <TableCell className="text-right">{formatBigNumber(broker.sell_volume)}</TableCell>
                               <TableCell className="text-right">{formatIDR(broker.sell_value)}</TableCell>
                             </TableRow>
                           ))
