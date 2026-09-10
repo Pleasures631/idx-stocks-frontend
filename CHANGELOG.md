@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-09-10] Liquidity Metrics API Mapping Fix
+
+- Card Liquidity existing memetakan seluruh field ADTV, trading frequency, dan average turnover langsung dari API tanpa kalkulasi rolling di frontend.
+- Nilai null/missing sekarang tampil `N/A`; rasio positif kecil memakai precision adaptif agar tidak terlihat sebagai `0.0%`, sementara literal zero tetap dipertahankan.
+- QA PASSED: lint, TypeScript, production build, Chromium Playwright, runtime API, dan formula raw SQL backend untuk CUAN/BBCA/TLKM.
+
 ## [2026-09-05] Tooltip chart harga menampilkan top-3 buyer & top-3 seller per tanggal
 
 - Price Chart tooltip now shows top-3 buyer brokers and top-3 seller brokers for the hovered date, reusing the existing `broker_summary` payload from `/stocks/:symbol`. Saat hover titik pada grafik harga, tooltip menampilkan tanggal, harga close, serta dua kolom "Top Buyers" dan "Top Sellers" (masing-masing hingga 3 baris, diurutkan berdasarkan `buy_value` / `sell_value` desc). Data di-cache per `trade_date` lewat `useMemo` di halaman detail sehingga lookup saat hover tetap O(1). Tidak ada endpoint baru, tidak ada dependensi baru, dan tab "Broker Summary" tidak berubah.

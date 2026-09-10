@@ -460,6 +460,39 @@ export interface PortfolioSummary {
   holdings: PortfolioHolding[]
 }
 
+// --- Liquidity Metrics ---
+export interface LiquidityMetrics {
+  stock_code: string
+  trade_date: string
+  close_price: number
+  listed_shares: number
+  free_float_pct: number
+
+  adtv_20d?: number | null
+  adtv_3m?: number | null
+  adtv_6m?: number | null
+  adtv_12m?: number | null
+
+  trading_freq_3m?: number | null
+  trading_freq_12m?: number | null
+
+  turnover_1d?: number | null
+  avg_turnover_20d?: number | null
+  avg_turnover_3m?: number | null
+  avg_turnover_6m?: number | null
+  avg_turnover_12m?: number | null
+
+  full_market_cap?: number | null
+  free_float_market_cap?: number | null
+
+  adtv_20d_formatted?: string | null
+  adtv_3m_formatted?: string | null
+  adtv_6m_formatted?: string | null
+  adtv_12m_formatted?: string | null
+  full_market_cap_formatted?: string | null
+  free_float_market_cap_formatted?: string | null
+}
+
 // --- Watchlist ---
 export interface WatchlistItem {
   id: string

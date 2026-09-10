@@ -10,6 +10,7 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { StockLineChart } from "@/components/charts/line-chart"
 import { VolumeBarChart } from "@/components/charts/bar-chart"
 import { BrokerFlowAnalysis } from "@/components/stocks/broker-flow-analysis"
+import { LiquidityMetricsCard } from "@/components/stocks/liquidity-metrics-card"
 import { stocksService, type TickerDetailParams } from "@/services/stocks"
 import type { TickerDetail, PriceChartRange, StockAnalyze, BrokerSummaryEntry } from "@/types"
 import { formatPercent, formatBigNumber, formatIDR } from "@/lib/utils"
@@ -309,6 +310,7 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
           <TabsTrigger value="chart" className="flex-1 sm:flex-none">Price Chart</TabsTrigger>
           <TabsTrigger value="brokers" className="flex-1 sm:flex-none">Broker Summary</TabsTrigger>
           <TabsTrigger value="analyze" className="flex-1 sm:flex-none">Analisis Broker Flow</TabsTrigger>
+          <TabsTrigger value="liquidity" className="flex-1 sm:flex-none">Liquidity</TabsTrigger>
         </TabsList>
 
         <TabsContent value="chart">
@@ -647,6 +649,9 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
               </CardContent>
             </Card>
           )}
+        </TabsContent>
+        <TabsContent value="liquidity">
+          <LiquidityMetricsCard ticker={detail.symbol} />
         </TabsContent>
       </Tabs>
     </div>

@@ -1,5 +1,5 @@
 import apiClient from "@/lib/api-client"
-import type { StockListItem, BrokerListItem, TickerDetail, PriceChartRange, StockAnalyze, StockbitIHSGQuote, StockbitIHSGChartPoint } from "@/types"
+import type { StockListItem, BrokerListItem, TickerDetail, PriceChartRange, StockAnalyze, StockbitIHSGQuote, StockbitIHSGChartPoint, LiquidityMetrics } from "@/types"
 
 export interface TickerDetailParams {
   range?: PriceChartRange
@@ -52,6 +52,18 @@ export const stocksService = {
     const response = await apiClient.get<{ success: boolean; total: number; data: BrokerListItem[] }>(
       "/brokers/list",
       { skipLoading: true }
+    )
+    return response.data.data
+  },
+
+  async getLiquidityMetrics(symbol: string, tradeDate?: string): Promise<LiquidityMetrics> {
+    const params: Record<string, string> = {}
+    if (tradeDate) {
+      params.trade_date = tradeDate
+    }
+    const response = await apiClient.get<{ success: boolean; data: LiquidityMetrics }>(
+      `/stocks/${symbol}/liquidity-metrics`,
+      { params, skipLoading: true }
     )
     return response.data.data
   },

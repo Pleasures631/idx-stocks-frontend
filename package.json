@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:auth": "node scripts/auth-e2e.mjs"
+    "test:auth": "node scripts/auth-e2e.mjs",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "next": "^14.2.0",
@@ -36,6 +37,7 @@
     "@radix-ui/react-scroll-area": "^1.2.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@types/node": "^22.0.0",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
