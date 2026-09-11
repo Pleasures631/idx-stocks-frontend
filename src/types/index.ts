@@ -236,6 +236,46 @@ export interface StockAnalyze {
   brokers_accumulation: AnalyzeBrokerFlow[]
   brokers_distribution: AnalyzeBrokerFlow[]
   display_status: string
+  dominant_flow?: DominantBrokerFlow | null
+  coverage?: BrokerFlowCoverage
+  warnings?: string[]
+}
+
+export interface BrokerFlowCoverage {
+  requested_start_date: string
+  requested_end_date: string
+  effective_start_date: string | null
+  effective_end_date: string | null
+  eligible_sessions: number
+  covered_sessions: number
+  coverage_ratio: number | null
+  source: string
+  data_scope: "top_25_each_side"
+  is_truncated: boolean
+  per_side_limit: number
+}
+
+export interface DominantBrokerFlow {
+  broker_code: string
+  broker_name: string
+  broker_group: string
+  direction: "ACCUMULATION" | "DISTRIBUTION"
+  state: "ACCUMULATING" | "DISTRIBUTING" | "ACCUMULATION_WEAKENING" | "DISTRIBUTION_WEAKENING" | "MARKUP_EXTENDED"
+  net_value: number
+  formatted_net_value: string
+  intensity: number | null
+  same_sign_share: number | null
+  net_direction_days: number
+  observed_days: number
+  covered_sessions: number
+  consistency: number | null
+  recent_5_net: number | null
+  prior_5_net: number | null
+  momentum: "ACCELERATING" | "WEAKENING" | "REVERSING" | "INSUFFICIENT_DATA"
+  weighted_average_price: number | null
+  latest_close: number | null
+  price_position_pct: number | null
+  price_confirmation: "CONFIRMED" | "NOT_CONFIRMED" | "UNAVAILABLE"
 }
 
 // --- Top Accumulation ---
@@ -412,6 +452,71 @@ export interface BacktestRun {
 export interface BacktestRunResponse {
   run: BacktestRun
   details: BacktestDetail[]
+}
+
+// --- Broker Flow Backtest V2 ---
+export type BrokerFlowBacktestDirection = "ACCUMULATION" | "DISTRIBUTION" | "BOTH"
+export type BrokerFlowBacktestHorizon = 1 | 5 | 10 | 20
+
+export interface BrokerFlowBacktestRequest {
+  symbols: string[]
+  start_date: string
+  end_date: string
+  as_of_date?: string
+  lookback_sessions?: number
+  horizons?: BrokerFlowBacktestHorizon[]
+  min_consistency?: number
+  min_intensity?: number
+  min_same_sign_share?: number
+  direction?: BrokerFlowBacktestDirection
+  max_results?: number
+}
+
+export interface BrokerFlowBacktestOutcome {
+  horizon_sessions: number
+  exit_date: string | null
+  exit_close: number | null
+  return_pct: number | null
+  benchmark_pct: number | null
+  excess_return_pct: number | null
+  max_adverse_excursion_pct: number | null
+}
+
+export interface BrokerFlowBacktestRow {
+  stock_code: string
+  signal_date: string
+  entry_date: string
+  entry_price: number
+  direction: Exclude<BrokerFlowBacktestDirection, "BOTH">
+  broker_code: string
+  net_value: number
+  intensity: number
+  consistency: number
+  same_sign_share: number
+  covered_sessions: number
+  outcomes: Record<string, BrokerFlowBacktestOutcome>
+}
+
+export interface BrokerFlowHorizonStats {
+  horizon_sessions: number
+  sample_size: number
+  hit_rate: number | null
+  mean_return_pct: number | null
+  median_return_pct: number | null
+  mean_excess_return_pct: number | null
+  mean_max_adverse_excursion_pct: number | null
+}
+
+export interface BrokerFlowBacktestResponse {
+  version: string
+  parameters: BrokerFlowBacktestRequest
+  total_signals: number
+  returned: number
+  truncated: boolean
+  stats: BrokerFlowHorizonStats[]
+  results: BrokerFlowBacktestRow[]
+  data_scope: string
+  warnings: string[]
 }
 
 // --- Auth Types ---

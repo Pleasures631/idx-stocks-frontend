@@ -38,8 +38,37 @@ export const backtestSchema = z.object({
   max_holding_days: z.number().min(1, "Min 1 day").max(365, "Max 365 days"),
 })
 
+export const brokerFlowBacktestSchema = z.object({
+  symbols: z.array(z.string().min(1)).min(1, "Masukkan minimal satu ticker").max(20, "Maksimal 20 ticker"),
+  start_date: z.string().min(1, "Tanggal awal wajib diisi"),
+  end_date: z.string().min(1, "Tanggal akhir wajib diisi"),
+  as_of_date: z.string().optional(),
+  lookback_sessions: z.number().int().min(5).max(60),
+  horizons: z.array(z.union([z.literal(1), z.literal(5), z.literal(10), z.literal(20)])).min(1),
+  min_consistency: z.number().min(0).max(1),
+  min_intensity: z.number().min(0).max(1),
+  min_same_sign_share: z.number().min(0).max(1),
+  direction: z.enum(["ACCUMULATION", "DISTRIBUTION", "BOTH"]),
+  max_results: z.number().int().min(1).max(1000),
+}).superRefine((data, ctx) => {
+  if (data.start_date > data.end_date) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Tanggal akhir tidak boleh sebelum tanggal awal", path: ["end_date"] })
+  }
+  if (data.as_of_date && data.as_of_date < data.end_date) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "As-of date tidak boleh sebelum tanggal akhir", path: ["as_of_date"] })
+  }
+  if (data.start_date && data.end_date) {
+    const start = Date.parse(`${data.start_date}T00:00:00Z`)
+    const end = Date.parse(`${data.end_date}T00:00:00Z`)
+    if (Number.isFinite(start) && Number.isFinite(end) && end - start > 366 * 24 * 60 * 60 * 1000) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Rentang maksimal 366 hari", path: ["end_date"] })
+    }
+  }
+})
+
 export type LoginFormData = z.infer<typeof loginSchema>
 export type RegisterFormData = z.infer<typeof registerSchema>
 export type PortfolioFormData = z.infer<typeof portfolioSchema>
 export type WatchlistFormData = z.infer<typeof watchlistSchema>
 export type BacktestFormData = z.infer<typeof backtestSchema>
+export type BrokerFlowBacktestFormData = z.infer<typeof brokerFlowBacktestSchema>

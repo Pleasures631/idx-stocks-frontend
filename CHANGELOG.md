@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-09-11] Broker Flow Backtest and Simplified Analysis
+
+- Menambahkan menu `/broker-flow-backtest` pada sidebar dan mobile drawer untuk menjalankan engine backend dengan hingga 20 ticker, tanggal/cutoff, lookback, arah, horizon, dan threshold yang dapat diatur.
+- UI menampilkan statistik backend per horizon, detail signal/next-session entry, outcome nullable, warning coverage, pagination, serta loading, validation, error, dan empty state tanpa menghitung rolling metric di browser.
+- Tab Analisis Broker Flow sekarang mengutamakan dominant broker, intensity, consistency, same-sign share, momentum, weighted price, price position, dan coverage; HHI/smart-money/z-score legacy dipindahkan ke Advanced.
+- QA PASSED: lint, TypeScript, production build, contract review, dan Chromium Playwright 3/3 untuk submit/render, validation/empty state, serta mobile navigation.
+
 ## [2026-09-10] Liquidity Metrics API Mapping Fix
 
 - Card Liquidity existing memetakan seluruh field ADTV, trading frequency, dan average turnover langsung dari API tanpa kalkulasi rolling di frontend.
