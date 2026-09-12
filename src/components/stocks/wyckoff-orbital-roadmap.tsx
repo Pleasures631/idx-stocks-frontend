@@ -17,6 +17,13 @@ function connectorClass(node: WyckoffRoadmapNode) {
   return node.status === "completed" ? "border-emerald-300/60 text-emerald-200" : "border-slate-500/40 text-slate-500"
 }
 
+const CONSTELLATION_STARS = [
+  [8, 18, 2, 0], [16, 32, 1, 1.2], [28, 12, 2, 2.1], [37, 26, 1, 0.6],
+  [49, 10, 1, 1.7], [59, 22, 2, 2.8], [70, 14, 1, 1.1], [82, 28, 2, 2.4],
+  [91, 12, 1, 0.3], [12, 58, 1, 1.9], [24, 76, 2, 0.8], [42, 66, 1, 2.5],
+  [55, 84, 2, 1.4], [67, 62, 1, 0.2], [78, 78, 2, 2.2], [94, 66, 1, 1.6],
+] as const
+
 export function WyckoffOrbitalRoadmap({ roadmap }: { roadmap?: WyckoffRoadmap | null }) {
   if (!roadmap) return null
 
@@ -26,6 +33,20 @@ export function WyckoffOrbitalRoadmap({ roadmap }: { roadmap?: WyckoffRoadmap | 
   return (
     <Card className="relative mt-6 overflow-hidden border-indigo-400/30 bg-slate-950 text-slate-100">
       <div className="pointer-events-none absolute inset-0 opacity-70 [background-image:radial-gradient(circle_at_15%_20%,rgba(129,140,248,0.22),transparent_22%),radial-gradient(circle_at_80%_10%,rgba(56,189,248,0.14),transparent_20%),radial-gradient(circle_at_60%_90%,rgba(244,114,182,0.12),transparent_24%)]" />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden opacity-60">
+        <svg className="absolute inset-0 h-full w-full text-indigo-200/20" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <path d="M8 18 L28 12 L37 26 L49 10" fill="none" stroke="currentColor" strokeWidth="0.18" />
+          <path d="M59 22 L70 14 L82 28" fill="none" stroke="currentColor" strokeWidth="0.18" />
+          <path d="M24 76 L42 66 L55 84 L67 62 L78 78" fill="none" stroke="currentColor" strokeWidth="0.18" />
+        </svg>
+        {CONSTELLATION_STARS.map(([left, top, size, delay]) => (
+          <span
+            key={`${left}-${top}`}
+            className="absolute animate-pulse rounded-full bg-white shadow-[0_0_9px_rgba(191,219,254,0.95)]"
+            style={{ left: `${left}%`, top: `${top}%`, width: `${size}px`, height: `${size}px`, animationDelay: `${delay}s` }}
+          />
+        ))}
+      </div>
       <CardHeader className="relative space-y-2">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2"><Orbit className="h-5 w-5 text-indigo-300" /><CardTitle>Wyckoff Orbital Roadmap</CardTitle></div>
@@ -38,7 +59,7 @@ export function WyckoffOrbitalRoadmap({ roadmap }: { roadmap?: WyckoffRoadmap | 
           <ol className="relative grid min-w-[820px] grid-cols-8 gap-1 px-5 py-10">
             {roadmap.nodes.map((node, index) => (
               <li key={node.key} className="relative flex min-w-0 flex-col items-center text-center">
-                {index > 0 && <span className={`absolute left-[-52%] right-[48%] top-6 border-t ${connectorClass(node)}`}><ArrowRight className="absolute -right-2 -top-2 h-4 w-4" /></span>}
+                {index > 0 && <span className={`absolute left-1/2 top-6 h-px w-full -translate-x-full border-t ${connectorClass(node)}`}><ArrowRight className="absolute -right-2 -top-2 h-4 w-4" /></span>}
                 <div className="relative z-10">
                   {node.status === "current" && <span className="absolute -inset-2 animate-ping rounded-full bg-orange-300/20" />}
                   <span className={`relative flex h-12 w-12 items-center justify-center rounded-full border ${nodeClass(node)}`}>
