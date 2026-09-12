@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-09-12] Broker Behavior 20 Sesi per Emiten
+
+- Tab Analisis Broker Flow sekarang menampilkan profil behavior broker dari 20 sesi Exodus terbaru per emiten, dengan label sederhana dan bukti raw B/S.
+- Label Ritel kecil/Pemain besar ditampilkan sebagai indikasi ukuran ticket, bukan kepastian identitas nasabah.
+- QA PASSED: lint, TypeScript, production build, dan Playwright smoke.
+
 ## [2026-09-12] Canonical Broker Colors
 
 - Semua penanda broker code memakai `broker_group` canonical: RETAIL ungu, GOVERNMENT/PEMERINTAH hijau, FOREIGN/ASING merah.
