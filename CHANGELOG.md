@@ -1,5 +1,10 @@
 # Changelog
 
+## [2026-09-13] Wyckoff Node Icon Alignment
+
+- Ikon check, sparkles, dan fase upcoming kini `display: block`, tanpa padding/margin bawaan, dan terpusat di node lingkaran fixed-size.
+- QA PASSED: lint, TypeScript, dan Playwright broker-flow replay.
+
 ## [2026-09-13] Wyckoff Connector Visibility
 
 - Kepala panah dipindahkan ke celah antar-node agar tidak tertutup lingkaran fase.

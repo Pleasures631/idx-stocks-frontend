@@ -64,8 +64,8 @@ export function WyckoffOrbitalRoadmap({ roadmap }: { roadmap?: WyckoffRoadmap | 
                 {index > 0 && <span className={`absolute left-1/2 top-6 z-20 h-px w-full -translate-x-full border-t ${connectorClass(node)}`}><ArrowRight className="absolute -right-8 -top-2 h-4 w-4" /></span>}
                 <div className="relative z-10">
                   {node.status === "current" && <span className="absolute -inset-2 animate-ping rounded-full bg-orange-300/20" />}
-                  <span className={`relative flex h-12 w-12 items-center justify-center rounded-full border ${nodeClass(node)}`}>
-                    {node.status === "completed" ? <Check className="h-5 w-5" /> : node.status === "current" ? <Sparkles className="h-5 w-5" /> : <CircleDot className="h-4 w-4" />}
+                  <span className={`relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full border p-0 leading-none ${nodeClass(node)}`}>
+                    {node.status === "completed" ? <Check className="block h-5 w-5 shrink-0" /> : node.status === "current" ? <Sparkles className="block h-5 w-5 shrink-0" /> : <CircleDot className="block h-4 w-4 shrink-0" />}
                   </span>
                 </div>
                 <span className={`mt-3 max-w-[92px] text-[11px] font-medium leading-tight ${node.status === "current" ? "text-orange-100" : "text-slate-300"}`}>{node.label}</span>
