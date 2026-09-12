@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-09-13] Replay Session-Date Validation
+
+- Replay menolak tanggal Sabtu/Minggu dengan pesan `Pilih hari bursa, Senin-Jumat.` dan menonaktifkan tombol eksekusi.
+- Hasil replay lama dibersihkan saat tanggal snapshot diubah.
+- Jika API mengembalikan `effective_end_date` yang berbeda dari tanggal pilihan (libur bursa atau tanggal tanpa sesi), UI menampilkan error eksplisit dan tidak memakai data sesi sebelumnya secara diam-diam.
+- QA PASSED: lint, TypeScript, production build, dan Playwright replay weekend validation.
+
 ## [2026-09-13] Aggregate Broker Flow Status Correction
 
 - Header Analisis Broker Flow dan kartu replay kini memakai status agregat Big Money/market flow dari API.

@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { format, parseISO, subDays } from "date-fns"
+import { format, isValid, isWeekend, parseISO, subDays } from "date-fns"
 import { CalendarClock, Play } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
@@ -24,6 +24,12 @@ interface ReplayResult {
 
 function weekStart(date: string) {
   return format(subDays(parseISO(date), 6), "yyyy-MM-dd")
+}
+
+function isValidSnapshotDate(date: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return false
+  const parsed = parseISO(date)
+  return isValid(parsed) && !isWeekend(parsed)
 }
 
 function snapshotLabel(analyze: StockAnalyze) {
@@ -100,7 +106,7 @@ export function BrokerFlowHistoricalReplay({ symbol }: { symbol: string }) {
   const [results, setResults] = useState<ReplayResult[]>([])
   const [loading, setLoading] = useState(false)
 
-  const validDates = useMemo(() => dates.every((date) => /^\d{4}-\d{2}-\d{2}$/.test(date)), [dates])
+  const validDates = useMemo(() => dates.every(isValidSnapshotDate), [dates])
 
   async function runReplay() {
     if (!validDates || loading) return
@@ -109,6 +115,10 @@ export function BrokerFlowHistoricalReplay({ symbol }: { symbol: string }) {
       const from = weekStart(date)
       try {
         const analyze = await stocksService.getStockAnalyze(symbol.toUpperCase(), { from, to: date })
+        const effectiveEnd = analyze.coverage?.effective_end_date
+        if (effectiveEnd && effectiveEnd !== date) {
+          return { date, from, analyze: null, error: `Tidak ada sesi perdagangan pada ${date}. Sesi terakhir tersedia ${effectiveEnd}. Pilih tanggal sesi bursa.` }
+        }
         return { date, from, analyze }
       } catch {
         return { date, from, analyze: null, error: "Data broker flow tidak tersedia untuk window ini." }
@@ -129,7 +139,8 @@ export function BrokerFlowHistoricalReplay({ symbol }: { symbol: string }) {
           {dates.map((date, index) => (
             <label key={index} className="space-y-1 text-xs text-muted-foreground">
               <span>Snapshot {index + 1}</span>
-              <Input type="date" value={date} onChange={(event) => setDates((current) => current.map((value, itemIndex) => itemIndex === index ? event.target.value : value))} />
+              <Input type="date" value={date} onChange={(event) => { setDates((current) => current.map((value, itemIndex) => itemIndex === index ? event.target.value : value)); setResults([]) }} />
+              {date && !isValidSnapshotDate(date) && <span className="block text-[11px] text-destructive">Pilih hari bursa, Senin-Jumat.</span>}
             </label>
           ))}
         </div>
