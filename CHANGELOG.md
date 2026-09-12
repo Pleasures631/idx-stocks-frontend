@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-09-12] Broker Flow Distribution Browser Sweep
+
+- Menambahkan launcher browser terpisah untuk menjalankan 20 variasi Broker Flow arah distribusi dengan persistence dan reuse batch ID yang sama seperti sweep akumulasi.
+- Shared browser runner kini memilih arah sinyal secara eksplisit tanpa mengubah default command akumulasi.
+- QA PASSED: syntax check kedua script dan satu focused Playwright case yang memverifikasi 20 request `DISTRIBUTION` serta reuse batch ID.
+
 ## [2026-09-11] Broker Flow Browser Sweep Automation
 
 - Menambahkan script `scripts/run-broker-flow-browser-sweep.mjs` yang membuka Chromium secara visible dan mengoperasikan form existing untuk 20 variasi threshold deterministik; mode headless tersedia sebagai opsi.

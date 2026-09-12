@@ -30,8 +30,8 @@ export const brokerFlowSweepVariants = [
   sameSign,
 }))
 
-function usage() {
-  return `Usage: node scripts/run-broker-flow-browser-sweep.mjs [options]
+function usage(commandName = "run-broker-flow-browser-sweep.mjs") {
+  return `Usage: node scripts/${commandName} [options]
 
 Options:
   --ticker <code>     Ticker tunggal (default: CUAN)
@@ -43,7 +43,7 @@ Options:
   --help              Tampilkan bantuan`
 }
 
-function parseArgs(argv) {
+function parseArgs(argv, { direction = "ACCUMULATION", commandName = "run-broker-flow-browser-sweep.mjs" } = {}) {
   const options = {
     ticker: "CUAN",
     start: "2026-05-01",
@@ -51,6 +51,7 @@ function parseArgs(argv) {
     asOf: "",
     baseUrl: "http://127.0.0.1:3000",
     headless: false,
+    direction,
   }
   const keys = new Map([
     ["--ticker", "ticker"],
@@ -62,7 +63,7 @@ function parseArgs(argv) {
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index]
     if (argument === "--help") {
-      process.stdout.write(`${usage()}\n`)
+      process.stdout.write(`${usage(commandName)}\n`)
       process.exit(0)
     }
     if (argument === "--headless") {
@@ -70,7 +71,7 @@ function parseArgs(argv) {
       continue
     }
     const key = keys.get(argument)
-    if (!key || !argv[index + 1]) throw new Error(`Argumen tidak valid: ${argument}\n${usage()}`)
+    if (!key || !argv[index + 1]) throw new Error(`Argumen tidak valid: ${argument}\n${usage(commandName)}`)
     options[key] = argv[index + 1]
     index += 1
   }
@@ -82,6 +83,7 @@ function parseArgs(argv) {
 function validateOptions(options) {
   const datePattern = /^\d{4}-\d{2}-\d{2}$/
   if (!/^[A-Z0-9]{1,12}$/.test(options.ticker)) throw new Error("Ticker harus 1-12 karakter A-Z/0-9.")
+  if (!["ACCUMULATION", "DISTRIBUTION"].includes(options.direction)) throw new Error("Arah sweep tidak valid.")
   const parsedDates = {}
   for (const [label, value] of [["start", options.start], ["end", options.end]]) {
     if (!datePattern.test(value)) throw new Error(`--${label} wajib berformat YYYY-MM-DD.`)
@@ -114,7 +116,9 @@ async function ensureChecked(locator) {
 }
 
 export async function runBrokerFlowSweep(page, options, log = (message) => process.stdout.write(`${message}\n`)) {
+  options = { direction: "ACCUMULATION", ...options }
   validateOptions(options)
+  const directionLabel = options.direction === "DISTRIBUTION" ? "Distribusi" : "Akumulasi"
   let batchId = ""
   page.setDefaultTimeout(30_000)
   await page.goto(`${options.baseUrl}/broker-flow-backtest`, { waitUntil: "networkidle" })
@@ -126,7 +130,8 @@ export async function runBrokerFlowSweep(page, options, log = (message) => proce
   if (options.asOf) await page.getByLabel("As-of date (opsional)").fill(options.asOf)
   await page.getByLabel("Lookback sesi").fill("20")
 
-  await page.getByLabel("Arah sinyal").waitFor()
+  await page.getByLabel("Arah sinyal").click()
+  await page.getByRole("option", { name: directionLabel, exact: true }).click()
   for (const horizon of [1, 5, 10, 20]) {
     await ensureChecked(page.getByRole("checkbox", { name: `${horizon}D` }))
   }
@@ -171,20 +176,24 @@ export async function runBrokerFlowSweep(page, options, log = (message) => proce
   return batchId
 }
 
-async function runCli() {
-  const options = parseArgs(process.argv.slice(2))
+export async function runBrokerFlowSweepCli({
+  direction = "ACCUMULATION",
+  commandName = "run-broker-flow-browser-sweep.mjs",
+} = {}) {
+  const options = parseArgs(process.argv.slice(2), { direction, commandName })
   validateOptions(options)
   const browser = await chromium.launch({ headless: options.headless })
   try {
     const batchId = await runBrokerFlowSweep(await browser.newPage(), options)
-    process.stdout.write(`Selesai: 20 variasi untuk ${options.ticker}. Batch ID: ${batchId}\n`)
+    const directionLabel = options.direction === "DISTRIBUTION" ? "distribusi" : "akumulasi"
+    process.stdout.write(`Selesai: 20 variasi ${directionLabel} untuk ${options.ticker}. Batch ID: ${batchId}\n`)
   } finally {
     await browser.close()
   }
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  runCli().catch((error) => {
+  runBrokerFlowSweepCli().catch((error) => {
     process.stderr.write(`Broker-flow browser sweep gagal: ${error instanceof Error ? error.message : String(error)}\n`)
     process.exitCode = 1
   })
