@@ -20,3 +20,11 @@ export function brokerCodeClassName(brokerGroup?: string | null, brokerType?: st
   if (fallback) return fallback
   return "text-foreground"
 }
+
+export function brokerGroupBadgeClassName(group?: string | null): string {
+  const normalized = group?.trim().toUpperCase() ?? ""
+  if (RETAIL_GROUPS.has(normalized)) return "bg-violet-500/15 text-violet-700 border-violet-500/30 dark:text-violet-300"
+  if (GOVERNMENT_GROUPS.has(normalized)) return "bg-emerald-500/15 text-emerald-700 border-emerald-500/30 dark:text-emerald-300"
+  if (FOREIGN_GROUPS.has(normalized)) return "bg-red-500/15 text-red-700 border-red-500/30 dark:text-red-300"
+  return "bg-muted text-muted-foreground border-border"
+}

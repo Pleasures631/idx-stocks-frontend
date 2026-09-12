@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { formatBigNumber, formatIDR } from "@/lib/utils"
-import { brokerCodeClassName } from "@/lib/broker-display"
+import { brokerCodeClassName, brokerGroupBadgeClassName } from "@/lib/broker-display"
 import type { AnalyzeBrokerFlow, DominantBrokerFlow, StockAnalyze } from "@/types"
 
 interface BrokerFlowAnalysisProps { analyze: StockAnalyze }
@@ -94,6 +94,7 @@ export function BrokerFlowAnalysis({ analyze }: BrokerFlowAnalysisProps) {
   const dominant = analyze.dominant_flow ?? null
   const coverage = analyze.coverage
   const warnings = analyze.warnings ?? []
+  const dominantIsAccumulation = dominant?.direction === "ACCUMULATION"
 
   return (
     <Card>
@@ -104,10 +105,10 @@ export function BrokerFlowAnalysis({ analyze }: BrokerFlowAnalysisProps) {
       <CardContent className="space-y-6">
         {dominant ? (
           <section className="space-y-4" aria-labelledby="dominant-flow-title">
-            <div className="rounded-lg border bg-muted/20 p-4">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Dominant accumulator / distributor</p>
+            <div className={`rounded-lg border p-4 ${dominantIsAccumulation ? "border-emerald-500/40 bg-emerald-500/5" : "border-red-500/40 bg-red-500/5"}`}>
+              <p className={`text-xs font-medium uppercase tracking-wide ${dominantIsAccumulation ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>{dominantIsAccumulation ? "Dominant accumulator" : "Dominant distributor"}</p>
               <div className="mt-2 flex flex-wrap items-baseline justify-between gap-3">
-                <div><h3 id="dominant-flow-title" className={`text-2xl font-bold ${brokerCodeClassName(dominant.broker_group)}`}>{dominant.broker_code}</h3><p className="text-sm text-muted-foreground">{dominant.broker_name || "Nama broker tidak tersedia"} · {dominant.broker_group || "Grup tidak tersedia"}</p></div>
+                <div><div className="flex flex-wrap items-center gap-2"><h3 id="dominant-flow-title" className={`text-2xl font-bold ${brokerCodeClassName(dominant.broker_group)}`}>{dominant.broker_code}</h3><Badge variant="outline" className={brokerGroupBadgeClassName(dominant.broker_group)}>{dominant.broker_group || "UNKNOWN"}</Badge></div><p className="text-sm text-muted-foreground">{dominant.broker_name || "Nama broker tidak tersedia"}</p></div>
                 <div className={`text-right ${flowTone(dominant.net_value)}`}><p className="text-xl font-bold">{dominant.formatted_net_value}</p><p className="text-xs">{dominant.direction === "ACCUMULATION" ? "Net buy" : "Net sell"}</p></div>
               </div>
             </div>

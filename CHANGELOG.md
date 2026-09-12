@@ -5,6 +5,7 @@
 - Semua penanda broker code memakai `broker_group` canonical: RETAIL ungu, GOVERNMENT/PEMERINTAH hijau, FOREIGN/ASING merah.
 - Warna dan label konsisten di dominant flow, tabel flow, daily Broker Summary, chart tooltip, dan anomaly table.
 - Tailwind content scan mencakup `src/lib` agar class warna helper tidak ter-purge saat production build.
+- Kartu dominant flow sekarang menampilkan label accumulator/distributor yang eksplisit, accent hijau/merah berdasarkan arah flow, dan badge grup broker yang kontras.
 - QA PASSED: lint, TypeScript, dan production build.
 
 ## [2026-09-12] Daily Broker Flow Raw Fields
