@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-09-12] Smart Money Absorption Gauge and Side Badges
+
+- Header menampilkan status `Distribusi (Retail Absorption)` saat flag API aktif dan gauge Retail Net versus Big Money Net dengan lebar dinamis.
+- Badge behavior kini menempel pada broker di tabel BUY/SELL dan memakai label ticket pada sisi transaksi tersebut; wording fixed 20 sesi dihapus.
+- QA PASSED: lint, TypeScript, dan clean production build.
+
 ## [2026-09-12] Broker Behavior 20 Sesi per Emiten
 
 - Tab Analisis Broker Flow sekarang menampilkan profil behavior broker dari 20 sesi Exodus terbaru per emiten, dengan label sederhana dan bukti raw B/S.

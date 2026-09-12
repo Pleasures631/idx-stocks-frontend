@@ -220,10 +220,13 @@ export interface BrokerBehaviorProfile {
   net_value: number
   buy_avg_price: number
   sell_avg_price: number
-  gross_ticket: number | null
-  ticket_percentile: number | null
+  buy_ticket: number | null
+  sell_ticket: number | null
+  buy_ticket_percentile: number | null
+  sell_ticket_percentile: number | null
+  buy_ticket_label: string
+  sell_ticket_label: string
   behavior_label: string
-  ticket_label: string
 }
 
 export interface StockAnalyze {
@@ -242,6 +245,8 @@ export interface StockAnalyze {
   retail_net: number
   institutional_net: number
   local_mid_net: number
+  big_money_net?: number
+  retail_absorption?: boolean
   smart_money_ratio: number
   retail_dominance: number
   top1_concentration: number

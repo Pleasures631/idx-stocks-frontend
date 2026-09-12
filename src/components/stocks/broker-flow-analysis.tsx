@@ -45,10 +45,12 @@ function momentumLabel(momentum: DominantBrokerFlow["momentum"]) {
   return labels[momentum]
 }
 
-function behaviorBadgeClassName(label: BrokerBehaviorProfile["behavior_label"]) {
+function behaviorBadgeClassName(label: string) {
   if (label === "Akumulator") return "bg-emerald-500/15 text-emerald-700 border-emerald-500/30 dark:text-emerald-300"
   if (label === "Distributor") return "bg-red-500/15 text-red-700 border-red-500/30 dark:text-red-300"
   if (label === "Trader aktif") return "bg-amber-500/15 text-amber-700 border-amber-500/30 dark:text-amber-300"
+  if (label === "Ritel kecil") return "bg-violet-500/15 text-violet-700 border-violet-500/30 dark:text-violet-300"
+  if (label === "Pemain besar") return "bg-blue-500/15 text-blue-700 border-blue-500/30 dark:text-blue-300"
   return "bg-muted text-muted-foreground border-border"
 }
 
@@ -56,9 +58,10 @@ function StatItem({ label, value, tone, detail }: { label: string; value: string
   return <div className="rounded-lg border p-3"><div className="text-xs text-muted-foreground">{label}</div><div className={`text-lg font-bold ${tone ?? ""}`}>{value}</div>{detail && <div className="mt-1 text-xs text-muted-foreground">{detail}</div>}</div>
 }
 
-function FlowTable({ title, rows, side }: { title: string; rows: AnalyzeBrokerFlow[]; side: "buy" | "sell" }) {
+function FlowTable({ title, rows, side, profiles }: { title: string; rows: AnalyzeBrokerFlow[]; side: "buy" | "sell"; profiles: BrokerBehaviorProfile[] }) {
   const isBuy = side === "buy"
   const priceLabel = isBuy ? "Avg Buy" : "Avg Sell"
+  const profileByCode = new Map(profiles.map((profile) => [profile.broker_code, profile]))
   return (
     <div className="space-y-2">
       <h4 className="text-sm font-semibold">{title}</h4>
@@ -78,7 +81,17 @@ function FlowTable({ title, rows, side }: { title: string; rows: AnalyzeBrokerFl
           <TableBody>
             {rows.length === 0 ? <TableRow><TableCell colSpan={isBuy ? 7 : 4} className="py-6 text-center text-sm text-muted-foreground">Tidak ada data</TableCell></TableRow> : rows.slice(0, 3).map((row) => (
               <TableRow key={row.broker_code}>
-                <TableCell><div className={`font-medium ${brokerCodeClassName(row.broker_group, row.broker_type)}`}>{row.broker_code}</div><div className="text-xs text-muted-foreground">{row.broker_group || row.broker_type}</div></TableCell>
+                <TableCell>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className={`font-medium ${brokerCodeClassName(row.broker_group, row.broker_type)}`}>{row.broker_code}</span>
+                    {(() => {
+                      const profile = profileByCode.get(row.broker_code)
+                      const label = profile?.behavior_label === "Trader aktif" ? "Trader aktif" : isBuy ? profile?.buy_ticket_label : profile?.sell_ticket_label
+                      return label ? <Badge variant="outline" className={behaviorBadgeClassName(label)}>{label}</Badge> : null
+                    })()}
+                  </div>
+                  <div className="text-xs text-muted-foreground">{row.broker_group || row.broker_type}</div>
+                </TableCell>
                 <TableCell className={`text-right font-medium ${flowTone(row.net_value)}`}>{row.formatted_net_value}</TableCell>
                 {isBuy && <TableCell className="text-right">{formatBigNumber(row.buy_lot)}</TableCell>}
                 {isBuy && <TableCell className="text-right">{row.buy_frequency == null ? "—" : row.buy_frequency.toLocaleString("id-ID")}</TableCell>}
@@ -103,18 +116,46 @@ export function BrokerFlowAnalysis({ analyze }: BrokerFlowAnalysisProps) {
   const warnings = analyze.warnings ?? []
   const behaviorProfiles = analyze.broker_behavior_profiles ?? []
   const dominantIsAccumulation = dominant?.direction === "ACCUMULATION"
+  const retailAbsorption = analyze.retail_absorption === true
+  const retailMagnitude = Math.abs(analyze.retail_net)
+  const bigMoneyMagnitude = Math.abs(analyze.big_money_net ?? 0)
+  const groupFlowMagnitude = retailMagnitude + bigMoneyMagnitude
+  const retailBarWidth = groupFlowMagnitude > 0 ? (retailMagnitude / groupFlowMagnitude) * 100 : 0
+  const bigMoneyBarWidth = groupFlowMagnitude > 0 ? (bigMoneyMagnitude / groupFlowMagnitude) * 100 : 0
 
   return (
     <Card>
       <CardHeader>
-        <div className="flex flex-wrap items-center gap-2"><CardTitle>Analisis Broker Flow</CardTitle>{dominant && <Badge variant={dominant.direction === "ACCUMULATION" ? "success" : "destructive"}>{stateLabel(dominant.state)}</Badge>}</div>
+        <div className="flex flex-wrap items-center gap-2"><CardTitle>Analisis Broker Flow</CardTitle>{dominant && <Badge variant={retailAbsorption ? "warning" : dominant.direction === "ACCUMULATION" ? "success" : "destructive"} className={retailAbsorption ? "border-orange-500/40 bg-orange-500/15 text-orange-700 dark:text-orange-300" : undefined}>{retailAbsorption ? "Distribusi (Retail Absorption)" : stateLabel(dominant.state)}</Badge>}</div>
         <CardDescription>{coverage?.effective_start_date ?? analyze.start_date} – {coverage?.effective_end_date ?? analyze.end_date}{coverage ? ` · ${coverage.covered_sessions}/${coverage.eligible_sessions} sesi tercakup` : ` · ${analyze.total_days} hari`}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {analyze.big_money_net != null && (
+          <section className="rounded-lg border p-4" aria-labelledby="group-flow-comparison-title">
+            <div className="mb-3">
+              <h3 id="group-flow-comparison-title" className="text-sm font-semibold">Retail vs Big Money</h3>
+              <p className="text-xs text-muted-foreground">Perbandingan net flow canonical group dari API.</p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-md border border-orange-500/30 bg-orange-500/5 p-3">
+                <div className="mb-2 h-2 rounded-full bg-orange-500/15"><div className="h-2 rounded-full bg-orange-500" style={{ width: `${retailBarWidth}%` }} /></div>
+                <div className="text-xs text-muted-foreground">Retail Net</div>
+                <div className={"text-lg font-semibold " + flowTone(analyze.retail_net)}>{formatBigNumber(analyze.retail_net)}</div>
+              </div>
+              <div className="rounded-md border border-red-500/30 bg-red-500/5 p-3">
+                <div className="mb-2 h-2 rounded-full bg-red-500/15"><div className="h-2 rounded-full bg-red-500" style={{ width: `${bigMoneyBarWidth}%` }} /></div>
+                <div className="text-xs text-muted-foreground">Big Money Net</div>
+                <div className={"text-lg font-semibold " + flowTone(analyze.big_money_net)}>{formatBigNumber(analyze.big_money_net)}</div>
+              </div>
+            </div>
+            {retailAbsorption && <div className="mt-3 rounded-md border border-orange-500/40 bg-orange-500/10 px-3 py-2 text-sm font-medium text-orange-700 dark:text-orange-300">Distribusi (Retail Absorption)</div>}
+          </section>
+        )}
+
         {dominant ? (
           <section className="space-y-4" aria-labelledby="dominant-flow-title">
-            <div className={`rounded-lg border p-4 ${dominantIsAccumulation ? "border-emerald-500/40 bg-emerald-500/5" : "border-red-500/40 bg-red-500/5"}`}>
-              <p className={`text-xs font-medium uppercase tracking-wide ${dominantIsAccumulation ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>{dominantIsAccumulation ? "Dominant accumulator" : "Dominant distributor"}</p>
+            <div className={`rounded-lg border p-4 ${retailAbsorption ? "border-orange-500/50 bg-orange-500/10" : dominantIsAccumulation ? "border-emerald-500/40 bg-emerald-500/5" : "border-red-500/40 bg-red-500/5"}`}>
+              <p className={`text-xs font-medium uppercase tracking-wide ${retailAbsorption ? "text-orange-700 dark:text-orange-300" : dominantIsAccumulation ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>{retailAbsorption ? "Distribusi (Retail Absorption)" : dominantIsAccumulation ? "Dominant accumulator" : "Dominant distributor"}</p>
               <div className="mt-2 flex flex-wrap items-baseline justify-between gap-3">
                 <div><div className="flex flex-wrap items-center gap-2"><h3 id="dominant-flow-title" className={`text-2xl font-bold ${brokerCodeClassName(dominant.broker_group)}`}>{dominant.broker_code}</h3><Badge variant="outline" className={brokerGroupBadgeClassName(dominant.broker_group)}>{dominant.broker_group || "UNKNOWN"}</Badge></div><p className="text-sm text-muted-foreground">{dominant.broker_name || "Nama broker tidak tersedia"}</p></div>
                 <div className={`text-right ${flowTone(dominant.net_value)}`}><p className="text-xl font-bold">{dominant.formatted_net_value}</p><p className="text-xs">{dominant.direction === "ACCUMULATION" ? "Net buy" : "Net sell"}</p></div>
@@ -133,55 +174,13 @@ export function BrokerFlowAnalysis({ analyze }: BrokerFlowAnalysisProps) {
           <div className="flex gap-3 rounded-lg border p-4 text-sm" role="status"><Info className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" /><p>Belum ada dominant broker yang memenuhi data minimum pada periode ini.</p></div>
         )}
 
-        {behaviorProfiles.length > 0 && (
-          <section className="space-y-3" aria-labelledby="broker-behavior-title">
-            <div>
-              <h3 id="broker-behavior-title" className="text-base font-semibold">Perilaku Broker 20 Sesi</h3>
-              <p className="text-xs text-muted-foreground">Profil dan bukti transaksi broker dari snapshot 20 sesi terakhir yang tersedia.</p>
-              <p className="text-xs text-muted-foreground">“Ritel kecil” dan “Pemain besar” adalah indikasi dari ukuran ticket, bukan kepastian identitas nasabah.</p>
-            </div>
-            <div className="grid gap-3 md:grid-cols-2">
-              {behaviorProfiles.map((profile) => (
-                <div key={profile.broker_code} className="rounded-lg border p-3">
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div>
-                      <div className={"font-semibold " + brokerCodeClassName(profile.broker_group, profile.broker_type)}>{profile.broker_code}</div>
-                      <div className="text-xs text-muted-foreground">{profile.broker_name || "Nama broker tidak tersedia"}</div>
-                    </div>
-                    <div className="flex flex-wrap justify-end gap-1.5">
-                      <Badge variant="outline" className={brokerGroupBadgeClassName(profile.broker_group)}>{profile.broker_group || "UNKNOWN"}</Badge>
-                      <Badge variant="outline" className={behaviorBadgeClassName(profile.behavior_label)}>{profile.behavior_label}</Badge>
-                    </div>
-                  </div>
-                  <div className="mt-3 grid grid-cols-2 gap-2 text-xs sm:grid-cols-5">
-                    <div><div className="text-muted-foreground">Aktif</div><div className="font-semibold">{profile.active_sessions}/{profile.effective_sessions}</div></div>
-                    <div><div className="text-muted-foreground">Net buy</div><div className="font-semibold">{profile.net_buy_sessions} sesi</div></div>
-                    <div><div className="text-muted-foreground">B FREQ</div><div className="font-semibold">{profile.buy_frequency.toLocaleString("id-ID")}</div></div>
-                    <div><div className="text-muted-foreground">B AVG</div><div className="font-semibold">{profile.buy_avg_price > 0 ? formatIDR(profile.buy_avg_price) : "—"}</div></div>
-                    <div><div className="text-muted-foreground">S FREQ</div><div className="font-semibold">{profile.sell_frequency.toLocaleString("id-ID")}</div></div>
-                  </div>
-                  <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                    <span>B LOT {formatBigNumber(profile.buy_lot)}</span>
-                    <span>B VAL Rp{formatBigNumber(profile.buy_value)}</span>
-                    <span>S LOT {formatBigNumber(profile.sell_lot)}</span>
-                    <span>S VAL Rp{formatBigNumber(profile.sell_value)}</span>
-                    <span>Net {profile.net_value >= 0 ? "+" : "−"}Rp{formatBigNumber(Math.abs(profile.net_value))}</span>
-                    <span>S AVG {profile.sell_avg_price > 0 ? formatIDR(profile.sell_avg_price) : "—"}</span>
-                    <span>{profile.ticket_label}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
         {(coverage || warnings.length > 0) && (
           <div className="rounded-lg border border-amber-500/40 bg-amber-500/5 p-4 text-sm">
             <div className="flex gap-3"><AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" /><div><p className="font-semibold">Coverage data</p>{coverage && <p className="mt-1 text-muted-foreground">{ratioPercent(coverage.coverage_ratio)} sesi tercakup · {coverage.data_scope.replaceAll("_", " ")} · limit {coverage.per_side_limit} broker per sisi.</p>}{warnings.length > 0 && <ul className="mt-2 space-y-1 text-muted-foreground">{warnings.map((warning) => <li key={warning}>• {warning}</li>)}</ul>}</div></div>
           </div>
         )}
 
-        <div className="grid gap-6 lg:grid-cols-2"><FlowTable title="Top Broker Akumulasi" rows={accumulation} side="buy" /><FlowTable title="Top Broker Distribusi" rows={distribution} side="sell" /></div>
+        <div className="grid gap-6 lg:grid-cols-2"><FlowTable title="Top Broker BUY" rows={accumulation} side="buy" profiles={behaviorProfiles} /><FlowTable title="Top Broker SELL" rows={distribution} side="sell" profiles={behaviorProfiles} /></div>
 
         <details className="rounded-lg border p-4">
           <summary className="cursor-pointer text-sm font-semibold">Advanced / indikator legacy</summary>
