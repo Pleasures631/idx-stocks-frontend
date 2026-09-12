@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { ArrowRight, Check, CircleDot, Orbit, Sparkles } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
@@ -74,6 +74,10 @@ export function WyckoffOrbitalRoadmap({ roadmap, replayRoadmaps = [] }: WyckoffO
   const [useReplay, setUseReplay] = useState(false)
   const replayAvailable = replayRoadmaps.length > 0
   const baseRoadmap = roadmap ?? replayRoadmaps[0]?.roadmap
+
+  useEffect(() => {
+    if (!replayAvailable) setUseReplay(false)
+  }, [replayAvailable])
 
   if (!baseRoadmap) return null
 

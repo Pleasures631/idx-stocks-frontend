@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-09-13] Replay Date Edit Reset
+
+- Mengosongkan hasil replay dan roadmap snapshot saat tanggal snapshot diubah, sehingga hasil lama tidak bercampur dengan hasil baru.
+- Toggle otomatis kembali ke mode 60 sesi sampai replay baru dijalankan.
+- QA PASSED: lint, TypeScript, dan Playwright broker-flow replay.
+
 ## [2026-09-13] Replay-Driven Wyckoff Roadmap
 
 - Roadmap kini punya toggle `60 sesi` / `Replay`.

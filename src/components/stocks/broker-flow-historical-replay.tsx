@@ -147,7 +147,15 @@ export function BrokerFlowHistoricalReplay({ symbol, onReplayRoadmapsChange }: B
           {dates.map((date, index) => (
             <label key={index} className="space-y-1 text-xs text-muted-foreground">
               <span>Snapshot {index + 1}</span>
-              <Input type="date" value={date} onChange={(event) => setDates((current) => current.map((value, itemIndex) => itemIndex === index ? event.target.value : value))} />
+              <Input
+                type="date"
+                value={date}
+                onChange={(event) => {
+                  setDates((current) => current.map((value, itemIndex) => itemIndex === index ? event.target.value : value))
+                  setResults([])
+                  onReplayRoadmapsChange?.([])
+                }}
+              />
               {date && !isValidSnapshotDate(date) && <span className="block text-[11px] text-destructive">Pilih hari bursa, Senin-Jumat.</span>}
             </label>
           ))}
