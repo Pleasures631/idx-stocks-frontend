@@ -14,7 +14,7 @@ import { BrokerFlowHistoricalReplay } from "@/components/stocks/broker-flow-hist
 import { WyckoffOrbitalRoadmap } from "@/components/stocks/wyckoff-orbital-roadmap"
 import { LiquidityMetricsCard } from "@/components/stocks/liquidity-metrics-card"
 import { stocksService, type TickerDetailParams } from "@/services/stocks"
-import type { TickerDetail, PriceChartRange, StockAnalyze, BrokerSummaryEntry } from "@/types"
+import type { ReplayRoadmapSnapshot, TickerDetail, PriceChartRange, StockAnalyze, BrokerSummaryEntry } from "@/types"
 import { formatPercent, formatBigNumber, formatIDR } from "@/lib/utils"
 import { brokerCodeClassName } from "@/lib/broker-display"
 import { addDays, format, parseISO } from "date-fns"
@@ -81,6 +81,7 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
   const [detailError, setDetailError] = useState<string | null>(null)
   const [retry, setRetry] = useState(0)
   const [analyze, setAnalyze] = useState<StockAnalyze | null>(null)
+  const [replayRoadmaps, setReplayRoadmaps] = useState<ReplayRoadmapSnapshot[]>([])
   const [analyzeLoading, setAnalyzeLoading] = useState(true)
   const didInitialLoad = useRef(false)
 
@@ -658,8 +659,8 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
           ) : analyze && analyze.total_brokers > 0 ? (
             <>
               <BrokerFlowAnalysis analyze={analyze} />
-              <BrokerFlowHistoricalReplay symbol={detail.symbol} />
-              <WyckoffOrbitalRoadmap roadmap={analyze.wyckoff_roadmap} />
+              <BrokerFlowHistoricalReplay symbol={detail.symbol} onReplayRoadmapsChange={setReplayRoadmaps} />
+              <WyckoffOrbitalRoadmap roadmap={analyze.wyckoff_roadmap} replayRoadmaps={replayRoadmaps} />
             </>
           ) : (
             <Card>

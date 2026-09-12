@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { formatBigNumber } from "@/lib/utils"
 import { stocksService } from "@/services/stocks"
-import type { StockAnalyze } from "@/types"
+import type { ReplayRoadmapSnapshot, StockAnalyze } from "@/types"
 import { getBrokerFlowStatus } from "./broker-flow-status"
 
 const DEFAULT_SNAPSHOT_DATES = ["2026-05-11", "2026-05-25", "2026-06-02"]
@@ -101,7 +101,12 @@ function SnapshotCard({ result }: { result: ReplayResult }) {
   )
 }
 
-export function BrokerFlowHistoricalReplay({ symbol }: { symbol: string }) {
+interface BrokerFlowHistoricalReplayProps {
+  symbol: string
+  onReplayRoadmapsChange?: (snapshots: ReplayRoadmapSnapshot[]) => void
+}
+
+export function BrokerFlowHistoricalReplay({ symbol, onReplayRoadmapsChange }: BrokerFlowHistoricalReplayProps) {
   const [dates, setDates] = useState(DEFAULT_SNAPSHOT_DATES)
   const [results, setResults] = useState<ReplayResult[]>([])
   const [loading, setLoading] = useState(false)
@@ -125,6 +130,9 @@ export function BrokerFlowHistoricalReplay({ symbol }: { symbol: string }) {
       }
     }))
     setResults(nextResults)
+    onReplayRoadmapsChange?.(nextResults.flatMap((result) => (
+      result.analyze?.wyckoff_roadmap ? [{ date: result.date, roadmap: result.analyze.wyckoff_roadmap }] : []
+    )))
     setLoading(false)
   }
 

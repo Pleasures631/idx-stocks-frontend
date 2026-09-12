@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-09-13] Replay-Driven Wyckoff Roadmap
+
+- Roadmap kini punya toggle `60 sesi` / `Replay`.
+- Saat Replay aktif setelah `Jalankan replay`, roadmap menampilkan fase dan evidence dari setiap snapshot yang berhasil, tanpa perhitungan tambahan di frontend.
+- QA PASSED: lint, TypeScript, dan Playwright broker-flow replay.
+
 ## [2026-09-13] Wyckoff Connector Edge Alignment
 
 - Konektor roadmap sekarang dimulai dari tepi node sebelumnya dan berhenti di tepi node berikutnya, sehingga garis tidak menembus lingkaran.

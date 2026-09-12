@@ -304,6 +304,11 @@ export interface WyckoffRoadmap {
   warnings: string[]
 }
 
+export interface ReplayRoadmapSnapshot {
+  date: string
+  roadmap: WyckoffRoadmap
+}
+
 export interface BrokerFlowCoverage {
   requested_start_date: string
   requested_end_date: string
