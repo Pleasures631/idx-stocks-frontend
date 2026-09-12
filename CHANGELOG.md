@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-09-12] Retail Dominant Warning Polish
+
+- Dominant accumulator dari broker RETAIL dan badge header `Akumulasi (Retail)` kini memakai aksen orange/warning agar tidak terbaca sebagai akumulasi smart money.
+- Akumulasi FOREIGN/INSTITUTIONAL tetap memakai aksen hijau dan Retail Absorption tetap menampilkan status distribusi orange.
+- QA PASSED: lint, TypeScript, dan production build.
+
 ## [2026-09-12] Smart Money Absorption Gauge and Side Badges
 
 - Header menampilkan status `Distribusi (Retail Absorption)` saat flag API aktif dan gauge Retail Net versus Big Money Net dengan lebar dinamis.

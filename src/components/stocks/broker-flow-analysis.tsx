@@ -117,6 +117,8 @@ export function BrokerFlowAnalysis({ analyze }: BrokerFlowAnalysisProps) {
   const behaviorProfiles = analyze.broker_behavior_profiles ?? []
   const dominantIsAccumulation = dominant?.direction === "ACCUMULATION"
   const retailAbsorption = analyze.retail_absorption === true
+  const retailDominant = dominantIsAccumulation && dominant?.broker_group === "RETAIL"
+  const retailWarning = retailAbsorption || retailDominant
   const retailMagnitude = Math.abs(analyze.retail_net)
   const bigMoneyMagnitude = Math.abs(analyze.big_money_net ?? 0)
   const groupFlowMagnitude = retailMagnitude + bigMoneyMagnitude
@@ -126,7 +128,7 @@ export function BrokerFlowAnalysis({ analyze }: BrokerFlowAnalysisProps) {
   return (
     <Card>
       <CardHeader>
-        <div className="flex flex-wrap items-center gap-2"><CardTitle>Analisis Broker Flow</CardTitle>{dominant && <Badge variant={retailAbsorption ? "warning" : dominant.direction === "ACCUMULATION" ? "success" : "destructive"} className={retailAbsorption ? "border-orange-500/40 bg-orange-500/15 text-orange-700 dark:text-orange-300" : undefined}>{retailAbsorption ? "Distribusi (Retail Absorption)" : stateLabel(dominant.state)}</Badge>}</div>
+        <div className="flex flex-wrap items-center gap-2"><CardTitle>Analisis Broker Flow</CardTitle>{dominant && <Badge variant={retailWarning ? "warning" : dominant.direction === "ACCUMULATION" ? "success" : "destructive"} className={retailWarning ? "border-orange-500/40 bg-orange-500/15 text-orange-700 dark:text-orange-300" : undefined}>{retailAbsorption ? "Distribusi (Retail Absorption)" : retailDominant ? "Akumulasi (Retail)" : stateLabel(dominant.state)}</Badge>}</div>
         <CardDescription>{coverage?.effective_start_date ?? analyze.start_date} – {coverage?.effective_end_date ?? analyze.end_date}{coverage ? ` · ${coverage.covered_sessions}/${coverage.eligible_sessions} sesi tercakup` : ` · ${analyze.total_days} hari`}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -154,8 +156,8 @@ export function BrokerFlowAnalysis({ analyze }: BrokerFlowAnalysisProps) {
 
         {dominant ? (
           <section className="space-y-4" aria-labelledby="dominant-flow-title">
-            <div className={`rounded-lg border p-4 ${retailAbsorption ? "border-orange-500/50 bg-orange-500/10" : dominantIsAccumulation ? "border-emerald-500/40 bg-emerald-500/5" : "border-red-500/40 bg-red-500/5"}`}>
-              <p className={`text-xs font-medium uppercase tracking-wide ${retailAbsorption ? "text-orange-700 dark:text-orange-300" : dominantIsAccumulation ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>{retailAbsorption ? "Distribusi (Retail Absorption)" : dominantIsAccumulation ? "Dominant accumulator" : "Dominant distributor"}</p>
+            <div className={`rounded-lg border p-4 ${retailWarning ? "border-orange-500/50 bg-orange-500/10" : dominantIsAccumulation ? "border-emerald-500/40 bg-emerald-500/5" : "border-red-500/40 bg-red-500/5"}`}>
+              <p className={`text-xs font-medium uppercase tracking-wide ${retailWarning ? "text-orange-700 dark:text-orange-300" : dominantIsAccumulation ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>{retailAbsorption ? "Distribusi (Retail Absorption)" : retailDominant ? "Dominant accumulator (Retail)" : dominantIsAccumulation ? "Dominant accumulator" : "Dominant distributor"}</p>
               <div className="mt-2 flex flex-wrap items-baseline justify-between gap-3">
                 <div><div className="flex flex-wrap items-center gap-2"><h3 id="dominant-flow-title" className={`text-2xl font-bold ${brokerCodeClassName(dominant.broker_group)}`}>{dominant.broker_code}</h3><Badge variant="outline" className={brokerGroupBadgeClassName(dominant.broker_group)}>{dominant.broker_group || "UNKNOWN"}</Badge></div><p className="text-sm text-muted-foreground">{dominant.broker_name || "Nama broker tidak tersedia"}</p></div>
                 <div className={`text-right ${flowTone(dominant.net_value)}`}><p className="text-xl font-bold">{dominant.formatted_net_value}</p><p className="text-xs">{dominant.direction === "ACCUMULATION" ? "Net buy" : "Net sell"}</p></div>
