@@ -61,7 +61,7 @@ export function WyckoffOrbitalRoadmap({ roadmap }: { roadmap?: WyckoffRoadmap | 
           <ol className="relative grid min-w-[820px] grid-cols-8 gap-1 px-5 py-10">
             {roadmap.nodes.map((node, index) => (
               <li key={node.key} className="relative flex min-w-0 flex-col items-center text-center">
-                {index > 0 && <span className={`absolute left-1/2 top-6 z-20 h-px w-full -translate-x-full border-t ${connectorClass(node)}`}><ArrowRight className="absolute -right-8 -top-2 h-4 w-4" /></span>}
+                {index > 0 && <span className={`absolute left-[calc(-50%+24px)] top-6 z-20 h-px w-[calc(100%-48px)] border-t ${connectorClass(node)}`}><ArrowRight className="absolute right-1 -top-2 h-4 w-4" /></span>}
                 <div className="relative z-10">
                   {node.status === "current" && <span className="absolute -inset-2 animate-ping rounded-full bg-orange-300/20" />}
                   <span className={`relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full border p-0 leading-none ${nodeClass(node)}`}>

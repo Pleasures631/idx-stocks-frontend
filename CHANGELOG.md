@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-09-13] Wyckoff Connector Edge Alignment
+
+- Konektor roadmap sekarang dimulai dari tepi node sebelumnya dan berhenti di tepi node berikutnya, sehingga garis tidak menembus lingkaran.
+- Kepala panah tetap berada di area gap antar-node.
+- QA PASSED: lint, TypeScript, dan Playwright broker-flow replay.
+
 ## [2026-09-13] Wyckoff Node Icon Alignment
 
 - Ikon check, sparkles, dan fase upcoming kini `display: block`, tanpa padding/margin bawaan, dan terpusat di node lingkaran fixed-size.
