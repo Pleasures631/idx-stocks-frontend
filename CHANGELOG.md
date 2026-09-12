@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-09-11] Broker Flow Browser Sweep Automation
+
+- Menambahkan script `scripts/run-broker-flow-browser-sweep.mjs` yang membuka Chromium secara visible dan mengoperasikan form existing untuk 20 variasi threshold deterministik; mode headless tersedia sebagai opsi.
+- Run memakai satu ticker, lookback 20, akumulasi, horizon 1D/5D/10D/20D, lalu menggunakan kembali batch ID dari hasil pertama agar seluruh ringkasan tersimpan dalam satu batch database.
+- Bagian Advanced pada UI kini menyediakan opsi persistence, nomor/nama variasi, batch ID opsional, konfirmasi row tersimpan, serta pesan aman untuk konflik HTTP 409.
+- QA PASSED: lint, TypeScript, production build, syntax/help CLI, dan enam focused Playwright cases termasuk tepat 20 submit serta reuse batch ID.
+
 ## [2026-09-11] Broker Flow Backtest and Simplified Analysis
 
 - Menambahkan menu `/broker-flow-backtest` pada sidebar dan mobile drawer untuk menjalankan engine backend dengan hingga 20 ticker, tanggal/cutoff, lookback, arah, horizon, dan threshold yang dapat diatur.

@@ -34,6 +34,7 @@ const responseData = {
   }],
   data_scope: "top_25_each_side",
   warnings: ["Exodus source is limited to top 25 brokers per side."],
+  persisted: false,
 }
 
 test("runs a bounded broker-flow backtest and renders backend statistics", async ({ page }) => {
@@ -61,6 +62,58 @@ test("runs a bounded broker-flow backtest and renders backend statistics", async
     min_intensity: 0.05,
     min_same_sign_share: 0.4,
   })
+})
+
+test("persists a named variant and reuses the returned batch id", async ({ page }) => {
+  const batchId = "0123456789abcdef0123456789abcdef"
+  const submittedBodies: Record<string, unknown>[] = []
+  await page.route("http://localhost:8080/api/v2/backtests/broker-flow", async (route) => {
+    submittedBodies.push(route.request().postDataJSON())
+    await route.fulfill({
+      json: {
+        success: true,
+        data: { ...responseData, persisted: true, batch_id: batchId, rows_inserted: 4 },
+      },
+    })
+  })
+
+  await page.goto("/broker-flow-backtest")
+  await page.getByText("Advanced thresholds").click()
+  await page.getByLabel("Simpan hasil ke DB").check()
+  await page.getByLabel("Nomor variasi").fill("1")
+  await page.getByLabel("Nama variasi").fill("baseline-default")
+  await page.getByRole("button", { name: "Jalankan backtest" }).click()
+
+  await expect(page.getByTestId("backtest-persisted-result")).toContainText("4 baris horizon tersimpan")
+  await expect(page.getByLabel("Batch ID (opsional)")).toHaveValue(batchId)
+  expect(submittedBodies[0]).toMatchObject({
+    persist_result: true,
+    variant_number: 1,
+    variant_name: "baseline-default",
+  })
+  expect(submittedBodies[0]).not.toHaveProperty("batch_id")
+
+  await page.getByLabel("Nomor variasi").fill("2")
+  await page.getByLabel("Nama variasi").fill("loose-40-01-20")
+  await page.getByRole("button", { name: "Jalankan backtest" }).click()
+  await expect.poll(() => submittedBodies.length).toBe(2)
+  expect(submittedBodies[1]).toMatchObject({
+    batch_id: batchId,
+    variant_number: 2,
+    variant_name: "loose-40-01-20",
+  })
+})
+
+test("shows a duplicate persisted variant response safely", async ({ page }) => {
+  await page.route("http://localhost:8080/api/v2/backtests/broker-flow", async (route) => {
+    await route.fulfill({ status: 409, json: { success: false, message: "broker-flow variant already exists in this batch" } })
+  })
+
+  await page.goto("/broker-flow-backtest")
+  await page.getByText("Advanced thresholds").click()
+  await page.getByLabel("Simpan hasil ke DB").check()
+  await page.getByRole("button", { name: "Jalankan backtest" }).click()
+  await expect(page.getByText("broker-flow variant already exists in this batch", { exact: true })).toBeVisible()
 })
 
 test("validates ticker count and renders a valid empty result", async ({ page }) => {

@@ -470,6 +470,10 @@ export interface BrokerFlowBacktestRequest {
   min_same_sign_share?: number
   direction?: BrokerFlowBacktestDirection
   max_results?: number
+  persist_result?: boolean
+  batch_id?: string
+  variant_number?: number
+  variant_name?: string
 }
 
 export interface BrokerFlowBacktestOutcome {
@@ -517,6 +521,9 @@ export interface BrokerFlowBacktestResponse {
   results: BrokerFlowBacktestRow[]
   data_scope: string
   warnings: string[]
+  persisted: boolean
+  batch_id?: string | null
+  rows_inserted?: number
 }
 
 // --- Auth Types ---

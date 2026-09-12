@@ -50,6 +50,10 @@ export const brokerFlowBacktestSchema = z.object({
   min_same_sign_share: z.number().min(0).max(1),
   direction: z.enum(["ACCUMULATION", "DISTRIBUTION", "BOTH"]),
   max_results: z.number().int().min(1).max(1000),
+  persist_result: z.boolean().optional(),
+  batch_id: z.string().regex(/^[0-9a-f]{32}$/, "Batch ID harus 32 karakter hex lowercase").optional(),
+  variant_number: z.number().int().min(1, "Nomor variasi minimal 1").max(20, "Nomor variasi maksimal 20").optional(),
+  variant_name: z.string().trim().min(1, "Nama variasi wajib diisi").max(64, "Nama variasi maksimal 64 karakter").optional(),
 }).superRefine((data, ctx) => {
   if (data.start_date > data.end_date) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Tanggal akhir tidak boleh sebelum tanggal awal", path: ["end_date"] })
@@ -62,6 +66,14 @@ export const brokerFlowBacktestSchema = z.object({
     const end = Date.parse(`${data.end_date}T00:00:00Z`)
     if (Number.isFinite(start) && Number.isFinite(end) && end - start > 366 * 24 * 60 * 60 * 1000) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Rentang maksimal 366 hari", path: ["end_date"] })
+    }
+  }
+  if (data.persist_result) {
+    if (data.variant_number === undefined) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Nomor variasi wajib diisi saat hasil disimpan", path: ["variant_number"] })
+    }
+    if (!data.variant_name?.trim()) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Nama variasi wajib diisi saat hasil disimpan", path: ["variant_name"] })
     }
   }
 })

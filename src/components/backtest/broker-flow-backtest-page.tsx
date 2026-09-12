@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { isAxiosError } from "axios"
 import { format, subMonths } from "date-fns"
 import { AlertTriangle, BarChart3, ChevronLeft, ChevronRight, FlaskConical, Info, Play } from "lucide-react"
 
@@ -67,6 +68,10 @@ export function BrokerFlowBacktestPage() {
   const [minIntensity, setMinIntensity] = useState(0.05)
   const [minSameSignShare, setMinSameSignShare] = useState(0.4)
   const [maxResults, setMaxResults] = useState(500)
+  const [persistResult, setPersistResult] = useState(false)
+  const [batchId, setBatchId] = useState("")
+  const [variantNumber, setVariantNumber] = useState(1)
+  const [variantName, setVariantName] = useState("baseline-default")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [data, setData] = useState<BrokerFlowBacktestResponse | null>(null)
@@ -96,6 +101,9 @@ export function BrokerFlowBacktestPage() {
       min_same_sign_share: minSameSignShare,
       direction,
       max_results: maxResults,
+      persist_result: persistResult,
+      ...(persistResult && batchId ? { batch_id: batchId.trim() } : {}),
+      ...(persistResult ? { variant_number: variantNumber, variant_name: variantName.trim() } : {}),
     }
     const validation = brokerFlowBacktestSchema.safeParse(request)
     if (!validation.success) {
@@ -108,9 +116,16 @@ export function BrokerFlowBacktestPage() {
     setData(null)
     setPage(1)
     try {
-      setData(await brokerFlowBacktestService.run(request))
-    } catch {
-      setError("Backtest gagal dijalankan. Periksa parameter dan koneksi server, lalu coba lagi.")
+      const result = await brokerFlowBacktestService.run(request)
+      if (persistResult && result.persisted && result.batch_id) {
+        setBatchId(result.batch_id)
+      }
+      setData(result)
+    } catch (caught) {
+      const message = isAxiosError<{ message?: string }>(caught)
+        ? caught.response?.data?.message
+        : caught instanceof Error ? caught.message : undefined
+      setError(message || "Backtest gagal dijalankan. Periksa parameter dan koneksi server, lalu coba lagi.")
     } finally {
       setLoading(false)
     }
@@ -228,6 +243,33 @@ export function BrokerFlowBacktestPage() {
                   <Input id="max-results" type="number" min={1} max={1000} value={maxResults} onChange={(event) => setMaxResults(event.target.valueAsNumber)} />
                 </div>
               </div>
+              <div className="mt-5 space-y-4 border-t pt-4">
+                <label className="flex items-center gap-2 text-sm font-medium" htmlFor="persist-result">
+                  <input
+                    id="persist-result"
+                    type="checkbox"
+                    checked={persistResult}
+                    onChange={(event) => setPersistResult(event.target.checked)}
+                  />
+                  Simpan hasil ke DB
+                </label>
+                {persistResult && (
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="variant-number">Nomor variasi</Label>
+                      <Input id="variant-number" type="number" min={1} max={20} value={variantNumber} onChange={(event) => setVariantNumber(event.target.valueAsNumber)} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="variant-name">Nama variasi</Label>
+                      <Input id="variant-name" maxLength={64} value={variantName} onChange={(event) => setVariantName(event.target.value)} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="batch-id">Batch ID (opsional)</Label>
+                      <Input id="batch-id" placeholder="Dibuat server pada run pertama" value={batchId} onChange={(event) => setBatchId(event.target.value.trim())} />
+                    </div>
+                  </div>
+                )}
+              </div>
             </details>
 
             {error && <p className="text-sm font-medium text-destructive" role="alert">{error}</p>}
@@ -250,6 +292,18 @@ export function BrokerFlowBacktestPage() {
             </div>
             <Badge variant={data.truncated ? "warning" : "outline"}>{data.returned} dari {data.total_signals} sinyal</Badge>
           </div>
+
+          {data.persisted && data.batch_id && (
+            <Card className="border-emerald-500/40 bg-emerald-500/5" data-testid="backtest-persisted-result">
+              <CardContent className="pt-6 text-sm">
+                <p className="font-semibold text-emerald-600">Hasil tersimpan ke DB</p>
+                <p className="mt-1 text-muted-foreground">
+                  Batch <span className="font-mono text-foreground" data-testid="persisted-batch-id">{data.batch_id}</span>
+                  {` · ${data.rows_inserted ?? 0} baris horizon tersimpan`}
+                </p>
+              </CardContent>
+            </Card>
+          )}
 
           {(data.truncated || data.warnings.length > 0) && (
             <Card className="border-amber-500/40">
