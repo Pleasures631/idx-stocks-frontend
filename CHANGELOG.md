@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-09-13] Wyckoff Roadmap Visual Polish
+
+- Memperbaiki posisi konektor panah agar tepat menghubungkan titik fase.
+- Menambahkan constellation stars dan garis rasi tipis di background roadmap dengan efek pulse ringan.
+- QA PASSED: lint, TypeScript, dan Playwright broker-flow replay.
+
 ## [2026-09-13] Broker Flow Analyze Tab Isolation
 
 - Replay dan Wyckoff roadmap tetap mempertahankan state saat pindah tab, tetapi panel inactive disembunyikan eksplisit sehingga kontennya hanya tampil di tab Analisis Broker Flow.
