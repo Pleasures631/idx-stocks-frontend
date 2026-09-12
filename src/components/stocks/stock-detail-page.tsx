@@ -10,6 +10,7 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { StockLineChart } from "@/components/charts/line-chart"
 import { VolumeBarChart } from "@/components/charts/bar-chart"
 import { BrokerFlowAnalysis } from "@/components/stocks/broker-flow-analysis"
+import { BrokerFlowHistoricalReplay } from "@/components/stocks/broker-flow-historical-replay"
 import { LiquidityMetricsCard } from "@/components/stocks/liquidity-metrics-card"
 import { stocksService, type TickerDetailParams } from "@/services/stocks"
 import type { TickerDetail, PriceChartRange, StockAnalyze, BrokerSummaryEntry } from "@/types"
@@ -654,7 +655,10 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
               </CardContent>
             </Card>
           ) : analyze && analyze.total_brokers > 0 ? (
-            <BrokerFlowAnalysis analyze={analyze} />
+            <>
+              <BrokerFlowAnalysis analyze={analyze} />
+              <BrokerFlowHistoricalReplay symbol={detail.symbol} />
+            </>
           ) : (
             <Card>
               <CardContent className="py-10 text-center text-sm text-muted-foreground">

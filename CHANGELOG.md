@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-09-13] Historical Broker Flow Replay
+
+- Menambahkan replay snapshot historis di tab Analisis Broker Flow dengan default tanggal CUAN 11 Mei, 25 Mei, dan 2 Juni 2026.
+- Setiap snapshot memanggil endpoint analyze dengan window 7 hari sampai tanggal snapshot dan menampilkan status, Retail Net, Big Money Net, serta top BUY/SELL.
+- QA PASSED: lint, TypeScript, production build, dan Playwright `broker-flow-replay.spec.ts`.
+
 ## [2026-09-13] Sector Grouping Menu
 
 - Menambahkan route `/sectors` dan menu Sector pada sidebar desktop/mobile drawer.

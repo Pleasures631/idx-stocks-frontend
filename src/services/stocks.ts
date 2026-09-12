@@ -40,10 +40,10 @@ export const stocksService = {
     return response.data.data
   },
 
-  async getStockAnalyze(symbol: string): Promise<StockAnalyze> {
+  async getStockAnalyze(symbol: string, params?: { from?: string; to?: string }): Promise<StockAnalyze> {
     const response = await apiClient.get<{ success: boolean; data: StockAnalyze }>(
       `/stocks/${symbol}/analyze`,
-      { skipLoading: true }
+      { params, skipLoading: true }
     )
     return response.data.data
   },
