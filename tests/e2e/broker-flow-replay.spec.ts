@@ -87,6 +87,17 @@ function analyzeResponse(to: string) {
       coverage: { requested_start_date: "2026-05-05", requested_end_date: to, effective_start_date: "2026-05-05", effective_end_date: to, eligible_sessions: 5, covered_sessions: 5, coverage_ratio: 1, source: "Exodus", data_scope: "top_25_each_side", is_truncated: true, per_side_limit: 25 },
       warnings: [],
       broker_behavior_profiles: [],
+      wyckoff_roadmap: {
+        current_phase: "sos",
+        phase_label: "SOS - Sign of Strength",
+        nodes: ["accumulation", "spring", "sos", "lps", "markup", "distribution", "utad", "markdown"].map((key, index) => ({ key, label: key === "sos" ? "SOS" : key, status: index < 2 ? "completed" : index === 2 ? "current" : "upcoming", description: "Roadmap evidence" })),
+        evidence: ["Harga keluar dari range", "Volume mendukung breakout"],
+        effective_start_date: "2026-03-01",
+        effective_end_date: to,
+        observed_sessions: 60,
+        required_sessions: 30,
+        warnings: [],
+      },
     },
   }
 }
@@ -120,6 +131,8 @@ test("replays broker flow indicators at weekly historical snapshots", async ({ p
   await expect(page.getByText("2026-05-25", { exact: true })).toBeVisible()
   await expect(page.getByText("2026-06-02", { exact: true })).toBeVisible()
   await expect(page.getByText("Akumulasi Big Money").first()).toBeVisible()
+  await expect(page.getByText("Wyckoff Orbital Roadmap")).toBeVisible()
+  await expect(page.getByText("SOS - Sign of Strength")).toBeVisible()
   await page.getByRole("tab", { name: "Broker Summary" }).click()
   await page.getByRole("tab", { name: "Analisis Broker Flow" }).click()
   await expect(page.getByText("Akumulasi Big Money").first()).toBeVisible()

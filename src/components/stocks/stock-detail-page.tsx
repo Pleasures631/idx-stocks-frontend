@@ -11,6 +11,7 @@ import { StockLineChart } from "@/components/charts/line-chart"
 import { VolumeBarChart } from "@/components/charts/bar-chart"
 import { BrokerFlowAnalysis } from "@/components/stocks/broker-flow-analysis"
 import { BrokerFlowHistoricalReplay } from "@/components/stocks/broker-flow-historical-replay"
+import { WyckoffOrbitalRoadmap } from "@/components/stocks/wyckoff-orbital-roadmap"
 import { LiquidityMetricsCard } from "@/components/stocks/liquidity-metrics-card"
 import { stocksService, type TickerDetailParams } from "@/services/stocks"
 import type { TickerDetail, PriceChartRange, StockAnalyze, BrokerSummaryEntry } from "@/types"
@@ -658,6 +659,7 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
             <>
               <BrokerFlowAnalysis analyze={analyze} />
               <BrokerFlowHistoricalReplay symbol={detail.symbol} />
+              <WyckoffOrbitalRoadmap roadmap={analyze.wyckoff_roadmap} />
             </>
           ) : (
             <Card>

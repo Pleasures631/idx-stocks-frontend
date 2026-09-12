@@ -282,6 +282,26 @@ export interface StockAnalyze {
   coverage?: BrokerFlowCoverage
   warnings?: string[]
   broker_behavior_profiles?: BrokerBehaviorProfile[]
+  wyckoff_roadmap?: WyckoffRoadmap | null
+}
+
+export interface WyckoffRoadmapNode {
+  key: "accumulation" | "spring" | "sos" | "lps" | "markup" | "distribution" | "utad" | "markdown"
+  label: string
+  status: "completed" | "current" | "upcoming"
+  description: string
+}
+
+export interface WyckoffRoadmap {
+  current_phase: "accumulation" | "spring" | "sos" | "lps" | "markup" | "distribution" | "utad" | "markdown" | "unconfirmed"
+  phase_label: string
+  nodes: WyckoffRoadmapNode[]
+  evidence: string[]
+  effective_start_date: string
+  effective_end_date: string
+  observed_sessions: number
+  required_sessions: number
+  warnings: string[]
 }
 
 export interface BrokerFlowCoverage {

@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-09-13] Wyckoff Orbital Roadmap
+
+- Tab Analisis Broker Flow kini menampilkan roadmap visual delapan fase Wyckoff di bawah replay, dengan node aktif berdenyut, panah, warna status, evidence, dan warning.
+- UI hanya merender hasil API dan memberi konteks bahwa roadmap adalah pembacaan struktur historis, bukan prediksi harga.
+- QA PASSED: lint, TypeScript, production build, dan Playwright replay.
+
 ## [2026-09-13] Replay Session-Date Validation
 
 - Replay menolak tanggal Sabtu/Minggu dengan pesan `Pilih hari bursa, Senin-Jumat.` dan menonaktifkan tombol eksekusi.
