@@ -116,6 +116,7 @@ test("replays broker flow indicators at weekly historical snapshots", async ({ p
   })
 
   await page.goto("/stocks/CUAN")
+  await expect(page.getByText("Wyckoff Orbital Roadmap")).toBeHidden()
   await page.getByRole("tab", { name: "Analisis Broker Flow" }).click()
   await expect(page.getByText("Replay Historical Broker Flow")).toBeVisible()
   const replayButton = page.getByRole("button", { name: "Jalankan replay" })

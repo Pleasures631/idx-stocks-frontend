@@ -640,7 +640,7 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
           </Card>
         </TabsContent>
 
-        <TabsContent value="analyze" forceMount>
+        <TabsContent value="analyze">
           {analyzeLoading ? (
             <Card>
               <CardHeader>

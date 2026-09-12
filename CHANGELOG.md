@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-09-13] Broker Flow Analyze Tab Isolation
+
+- Replay dan Wyckoff roadmap tidak lagi di-mount permanen saat tab lain aktif; kontennya hanya tampil di tab Analisis Broker Flow.
+- Menambahkan regression check Playwright agar roadmap tersembunyi pada tab awal dan tetap tampil setelah tab analisis dibuka.
+- QA PASSED: lint, TypeScript, dan Playwright broker-flow replay.
+
 ## [2026-09-13] Wyckoff Orbital Roadmap
 
 - Tab Analisis Broker Flow kini menampilkan roadmap visual delapan fase Wyckoff di bawah replay, dengan node aktif berdenyut, panah, warna status, evidence, dan warning.
