@@ -3,7 +3,7 @@
 ## [2026-09-13] Replay Session-Date Validation
 
 - Replay menolak tanggal Sabtu/Minggu dengan pesan `Pilih hari bursa, Senin-Jumat.` dan menonaktifkan tombol eksekusi.
-- Hasil replay lama dibersihkan saat tanggal snapshot diubah.
+- Hasil replay tetap dipertahankan saat tanggal diedit dan saat user berpindah tab, sehingga tidak perlu menjalankan ulang hanya untuk kembali melihat snapshot.
 - Jika API mengembalikan `effective_end_date` yang berbeda dari tanggal pilihan (libur bursa atau tanggal tanpa sesi), UI menampilkan error eksplisit dan tidak memakai data sesi sebelumnya secara diam-diam.
 - QA PASSED: lint, TypeScript, production build, dan Playwright replay weekend validation.
 
