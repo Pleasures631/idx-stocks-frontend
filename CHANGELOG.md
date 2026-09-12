@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-09-13] Sector Grouping Menu
+
+- Menambahkan route `/sectors` dan menu Sector pada sidebar desktop/mobile drawer.
+- Emiten dikelompokkan dari `sector` API, dengan jumlah emiten, sub-sector, pencarian, empty/error state, dan link ke detail saham.
+- QA PASSED: lint, TypeScript, production build, dan Playwright `sectors.spec.ts`.
+
 ## [2026-09-12] Retail Dominant Warning Polish
 
 - Dominant accumulator dari broker RETAIL dan badge header `Akumulasi (Retail)` kini memakai aksen orange/warning agar tidak terbaca sebagai akumulasi smart money.

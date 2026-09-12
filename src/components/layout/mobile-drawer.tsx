@@ -11,6 +11,7 @@ import {
   Settings,
   GraduationCap,
   FlaskConical,
+  Layers3,
   X,
 } from "lucide-react"
 import {
@@ -24,6 +25,7 @@ import { BrandMark } from "@/components/brand/brand-mark"
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Stocks", href: "/stocks", icon: TrendingUp },
+  { label: "Sector", href: "/sectors", icon: Layers3 },
   { label: "Broker Backtest", href: "/broker-flow-backtest", icon: FlaskConical },
   { label: "Portfolio", href: "/portfolio", icon: Briefcase },
   { label: "Watchlist", href: "/watchlist", icon: Star },

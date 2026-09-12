@@ -78,6 +78,10 @@ export interface StockListItem {
   change_price: number
   change_pct: number
   volume: number
+  sector: string
+  sub_sector: string
+  industry: string
+  sub_industry: string
 }
 
 export interface StockbitIHSGQuote {
