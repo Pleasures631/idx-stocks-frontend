@@ -2,7 +2,7 @@
 
 ## [2026-09-13] Broker Flow Analyze Tab Isolation
 
-- Replay dan Wyckoff roadmap tidak lagi di-mount permanen saat tab lain aktif; kontennya hanya tampil di tab Analisis Broker Flow.
+- Replay dan Wyckoff roadmap tetap mempertahankan state saat pindah tab, tetapi panel inactive disembunyikan eksplisit sehingga kontennya hanya tampil di tab Analisis Broker Flow.
 - Menambahkan regression check Playwright agar roadmap tersembunyi pada tab awal dan tetap tampil setelah tab analisis dibuka.
 - QA PASSED: lint, TypeScript, dan Playwright broker-flow replay.
 
