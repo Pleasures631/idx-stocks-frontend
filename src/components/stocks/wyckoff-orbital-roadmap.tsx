@@ -31,7 +31,7 @@ export function WyckoffOrbitalRoadmap({ roadmap }: { roadmap?: WyckoffRoadmap | 
           <div className="flex items-center gap-2"><Orbit className="h-5 w-5 text-indigo-300" /><CardTitle>Wyckoff Orbital Roadmap</CardTitle></div>
           <Badge className="border-orange-300/40 bg-orange-400/15 text-orange-100">{roadmap.phase_label}</Badge>
         </div>
-        <CardDescription className="text-slate-400">Fase terakhir {roadmap.effective_end_date} · struktur {roadmap.observed_sessions} sesi · bukan prediksi harga</CardDescription>
+        <CardDescription className="text-slate-400">Fase terakhir {roadmap.effective_end_date} - struktur {roadmap.observed_sessions} sesi - bukan prediksi harga</CardDescription>
       </CardHeader>
       <CardContent className="relative space-y-5">
         <div className="overflow-x-auto rounded-xl border border-indigo-300/15 bg-slate-950/70">
