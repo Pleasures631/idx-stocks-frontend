@@ -14,8 +14,9 @@ import { LiquidityMetricsCard } from "@/components/stocks/liquidity-metrics-card
 import { stocksService, type TickerDetailParams } from "@/services/stocks"
 import type { TickerDetail, PriceChartRange, StockAnalyze, BrokerSummaryEntry } from "@/types"
 import { formatPercent, formatBigNumber, formatIDR } from "@/lib/utils"
-import { addDays, format } from "date-fns"
-import { ArrowLeft, TrendingUp, TrendingDown, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react"
+import { brokerCodeClassName } from "@/lib/broker-display"
+import { addDays, format, parseISO } from "date-fns"
+import { ArrowLeft, TrendingUp, TrendingDown, ChevronLeft, ChevronRight, ChevronDown, CalendarDays } from "lucide-react"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { useState, useEffect, useRef, useMemo } from "react"
@@ -398,7 +399,7 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
                                 <div key={`buy-${b.broker_code}`} className="space-y-0.5">
                                   <div className="text-xs font-medium leading-tight">{b.broker_name}</div>
                                   <div className="text-[10px] text-muted-foreground">
-                                    {b.broker_type} · {b.broker_code}
+                                    {b.broker_group || b.broker_type} · <span className={brokerCodeClassName(b.broker_group, b.broker_type)}>{b.broker_code}</span>
                                   </div>
                                   <div className="text-xs font-semibold text-emerald-500">
                                     {formatIDR(b.buy_value)} · {formatBigNumber(b.buy_volume)}
@@ -416,7 +417,7 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
                                 <div key={`sell-${b.broker_code}`} className="space-y-0.5">
                                   <div className="text-xs font-medium leading-tight">{b.broker_name}</div>
                                   <div className="text-[10px] text-muted-foreground">
-                                    {b.broker_type} · {b.broker_code}
+                                    {b.broker_group || b.broker_type} · <span className={brokerCodeClassName(b.broker_group, b.broker_type)}>{b.broker_code}</span>
                                   </div>
                                   <div className="text-xs font-semibold text-red-500">
                                     {formatIDR(b.sell_value)} · {formatBigNumber(b.sell_volume)}
@@ -576,7 +577,7 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
                               <TableRow key={broker.broker_code}>
                                 <TableCell>
                                   <div className="font-medium">{broker.broker_name}</div>
-                                  <div className="text-xs text-muted-foreground">{broker.broker_type} · {broker.broker_code}</div>
+                                  <div className="text-xs text-muted-foreground">{broker.broker_group || broker.broker_type} · <span className={brokerCodeClassName(broker.broker_group, broker.broker_type)}>{broker.broker_code}</span></div>
                                 </TableCell>
                                 <TableCell className="text-right">{formatBigNumber(broker.buy_lot)}</TableCell>
                                 <TableCell className="text-right">{broker.buy_frequency == null ? "—" : broker.buy_frequency.toLocaleString("id-ID")}</TableCell>
@@ -618,7 +619,7 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
                               <TableRow key={broker.broker_code}>
                                 <TableCell>
                                   <div className="font-medium">{broker.broker_name}</div>
-                                  <div className="text-xs text-muted-foreground">{broker.broker_type} · {broker.broker_code}</div>
+                                  <div className="text-xs text-muted-foreground">{broker.broker_group || broker.broker_type} · <span className={brokerCodeClassName(broker.broker_group, broker.broker_type)}>{broker.broker_code}</span></div>
                                 </TableCell>
                                 <TableCell className="text-right">{formatBigNumber(broker.sell_lot)}</TableCell>
                                 <TableCell className="text-right">{broker.sell_frequency == null ? "—" : broker.sell_frequency.toLocaleString("id-ID")}</TableCell>

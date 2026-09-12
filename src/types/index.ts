@@ -124,6 +124,7 @@ export interface BrokerVolume {
   broker_code: string
   broker_name: string
   broker_type: string
+  broker_group?: string
   buy_lot: number
   sell_lot: number
   buy_volume: number
@@ -172,6 +173,7 @@ export interface AnalyzeAnomaly {
   stock_code: string
   broker_code: string
   broker_type: string
+  broker_group?: string
   trade_date: string
   net_value: number
   formatted_net: string
@@ -182,6 +184,7 @@ export interface AnalyzeAnomaly {
 export interface AnalyzeBrokerFlow {
   broker_code: string
   broker_type: string
+  broker_group?: string
   buy_value: number
   sell_value: number
   net_value: number

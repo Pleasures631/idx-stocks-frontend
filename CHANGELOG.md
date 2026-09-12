@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-09-12] Canonical Broker Colors
+
+- Semua penanda broker code memakai `broker_group` canonical: RETAIL ungu, GOVERNMENT/PEMERINTAH hijau, FOREIGN/ASING merah.
+- Warna dan label konsisten di dominant flow, tabel flow, daily Broker Summary, chart tooltip, dan anomaly table.
+- QA PASSED: lint, TypeScript, dan production build.
+
 ## [2026-09-12] Daily Broker Flow Raw Fields
 
 - Tabel Broker Summary harian pada halaman saham sekarang menampilkan B LOT, B FREQ, B AVG, B VAL dan field sell equivalents langsung dari API existing.

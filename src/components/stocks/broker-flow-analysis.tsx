@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { formatBigNumber, formatIDR } from "@/lib/utils"
+import { brokerCodeClassName } from "@/lib/broker-display"
 import type { AnalyzeBrokerFlow, DominantBrokerFlow, StockAnalyze } from "@/types"
 
 interface BrokerFlowAnalysisProps { analyze: StockAnalyze }
@@ -70,7 +71,7 @@ function FlowTable({ title, rows, side }: { title: string; rows: AnalyzeBrokerFl
           <TableBody>
             {rows.length === 0 ? <TableRow><TableCell colSpan={isBuy ? 7 : 4} className="py-6 text-center text-sm text-muted-foreground">Tidak ada data</TableCell></TableRow> : rows.slice(0, 3).map((row) => (
               <TableRow key={row.broker_code}>
-                <TableCell><div className="font-medium">{row.broker_code}</div><div className="text-xs text-muted-foreground">{row.broker_type}</div></TableCell>
+                <TableCell><div className={`font-medium ${brokerCodeClassName(row.broker_group, row.broker_type)}`}>{row.broker_code}</div><div className="text-xs text-muted-foreground">{row.broker_group || row.broker_type}</div></TableCell>
                 <TableCell className={`text-right font-medium ${flowTone(row.net_value)}`}>{row.formatted_net_value}</TableCell>
                 {isBuy && <TableCell className="text-right">{formatBigNumber(row.buy_lot)}</TableCell>}
                 {isBuy && <TableCell className="text-right">{row.buy_frequency == null ? "—" : row.buy_frequency.toLocaleString("id-ID")}</TableCell>}
@@ -106,7 +107,7 @@ export function BrokerFlowAnalysis({ analyze }: BrokerFlowAnalysisProps) {
             <div className="rounded-lg border bg-muted/20 p-4">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Dominant accumulator / distributor</p>
               <div className="mt-2 flex flex-wrap items-baseline justify-between gap-3">
-                <div><h3 id="dominant-flow-title" className="text-2xl font-bold">{dominant.broker_code}</h3><p className="text-sm text-muted-foreground">{dominant.broker_name || "Nama broker tidak tersedia"} · {dominant.broker_group || "Grup tidak tersedia"}</p></div>
+                <div><h3 id="dominant-flow-title" className={`text-2xl font-bold ${brokerCodeClassName(dominant.broker_group)}`}>{dominant.broker_code}</h3><p className="text-sm text-muted-foreground">{dominant.broker_name || "Nama broker tidak tersedia"} · {dominant.broker_group || "Grup tidak tersedia"}</p></div>
                 <div className={`text-right ${flowTone(dominant.net_value)}`}><p className="text-xl font-bold">{dominant.formatted_net_value}</p><p className="text-xs">{dominant.direction === "ACCUMULATION" ? "Net buy" : "Net sell"}</p></div>
               </div>
             </div>
@@ -140,7 +141,7 @@ export function BrokerFlowAnalysis({ analyze }: BrokerFlowAnalysisProps) {
             </div>
             <div className="flex flex-wrap gap-2"><Badge variant="outline">Smart Money Ratio: {analyze.smart_money_ratio.toFixed(2)}</Badge><Badge variant="outline">Legacy Consistency: {analyze.smart_money_consistency.toFixed(0)}%</Badge><Badge variant="outline">HHI Buy: {(analyze.buy_hhi ?? 0).toFixed(0)}</Badge><Badge variant="outline">HHI Sell: {(analyze.sell_hhi ?? 0).toFixed(0)}</Badge><Badge variant="outline">HHI Total: {(analyze.total_hhi ?? 0).toFixed(0)}</Badge></div>
             {anomalies.length > 0 && (
-              <div className="overflow-x-auto"><h4 className="mb-2 text-sm font-semibold">Anomali</h4><Table><TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Broker</TableHead><TableHead className="text-right">Z-Score</TableHead><TableHead className="text-right">Net</TableHead></TableRow></TableHeader><TableBody>{anomalies.map((anomaly, index) => <TableRow key={`${anomaly.trade_date}-${anomaly.broker_code}-${index}`}><TableCell>{anomaly.trade_date}</TableCell><TableCell>{anomaly.broker_code}<div className="text-xs text-muted-foreground">{anomaly.broker_type}</div></TableCell><TableCell className="text-right">{anomaly.z_score}</TableCell><TableCell className={`text-right font-medium ${flowTone(anomaly.net_value)}`}>{anomaly.formatted_net}</TableCell></TableRow>)}</TableBody></Table></div>
+              <div className="overflow-x-auto"><h4 className="mb-2 text-sm font-semibold">Anomali</h4><Table><TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Broker</TableHead><TableHead className="text-right">Z-Score</TableHead><TableHead className="text-right">Net</TableHead></TableRow></TableHeader><TableBody>{anomalies.map((anomaly, index) => <TableRow key={`${anomaly.trade_date}-${anomaly.broker_code}-${index}`}><TableCell>{anomaly.trade_date}</TableCell><TableCell><span className={brokerCodeClassName(anomaly.broker_group, anomaly.broker_type)}>{anomaly.broker_code}</span><div className="text-xs text-muted-foreground">{anomaly.broker_group || anomaly.broker_type}</div></TableCell><TableCell className="text-right">{anomaly.z_score}</TableCell><TableCell className={`text-right font-medium ${flowTone(anomaly.net_value)}`}>{anomaly.formatted_net}</TableCell></TableRow>)}</TableBody></Table></div>
             )}
           </div>
         </details>
