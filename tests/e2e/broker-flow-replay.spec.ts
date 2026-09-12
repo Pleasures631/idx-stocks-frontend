@@ -141,7 +141,7 @@ test("replays broker flow indicators at weekly historical snapshots", async ({ p
   await expect(page.getByText("Wyckoff Orbital Roadmap")).toBeVisible()
   await expect(page.getByText("SOS - Sign of Strength")).toBeVisible()
   await page.getByRole("switch", { name: "Gunakan roadmap replay" }).click()
-  await expect(page.getByText("Mengikuti roadmap dari tanggal snapshot replay yang berhasil dijalankan.")).toBeVisible()
+  await expect(page.getByText("Header flow memakai window replay 7 hari; fase Wyckoff membaca struktur 60 sesi sampai tiap tanggal snapshot.")).toBeVisible()
   await expect(page.getByText("Snapshot 2026-05-11")).toBeVisible()
   await page.getByRole("tab", { name: "Broker Summary" }).click()
   await page.getByRole("tab", { name: "Analisis Broker Flow" }).click()

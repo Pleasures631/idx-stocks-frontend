@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-09-13] Wyckoff Replay Window Context
+
+- Menjelaskan di mode Replay bahwa header flow memakai window 7 hari, sementara roadmap Wyckoff memakai struktur 60 sesi sampai tanggal snapshot.
+- Setiap roadmap snapshot kini menampilkan rentang sesi struktur yang dipakai agar perbedaan horizon tidak terlihat sebagai sinyal kontradiktif.
+- QA PASSED: lint, TypeScript, dan Playwright broker-flow replay.
+
 ## [2026-09-13] Replay Date Edit Reset
 
 - Mengosongkan hasil replay dan roadmap snapshot saat tanggal snapshot diubah, sehingga hasil lama tidak bercampur dengan hasil baru.
