@@ -200,6 +200,32 @@ export interface AnalyzeBrokerFlow {
   display_status: string
 }
 
+export interface BrokerBehaviorProfile {
+  broker_code: string
+  broker_name: string
+  broker_type: string
+  broker_group: string
+  effective_sessions: number
+  active_sessions: number
+  buy_sessions: number
+  sell_sessions: number
+  net_buy_sessions: number
+  net_sell_sessions: number
+  buy_lot: number
+  sell_lot: number
+  buy_frequency: number
+  sell_frequency: number
+  buy_value: number
+  sell_value: number
+  net_value: number
+  buy_avg_price: number
+  sell_avg_price: number
+  gross_ticket: number | null
+  ticket_percentile: number | null
+  behavior_label: string
+  ticket_label: string
+}
+
 export interface StockAnalyze {
   symbol: string
   start_date: string
@@ -246,6 +272,7 @@ export interface StockAnalyze {
   dominant_flow?: DominantBrokerFlow | null
   coverage?: BrokerFlowCoverage
   warnings?: string[]
+  broker_behavior_profiles?: BrokerBehaviorProfile[]
 }
 
 export interface BrokerFlowCoverage {

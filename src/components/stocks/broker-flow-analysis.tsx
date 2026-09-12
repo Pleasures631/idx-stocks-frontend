@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { formatBigNumber, formatIDR } from "@/lib/utils"
 import { brokerCodeClassName, brokerGroupBadgeClassName } from "@/lib/broker-display"
-import type { AnalyzeBrokerFlow, DominantBrokerFlow, StockAnalyze } from "@/types"
+import type { AnalyzeBrokerFlow, BrokerBehaviorProfile, DominantBrokerFlow, StockAnalyze } from "@/types"
 
 interface BrokerFlowAnalysisProps { analyze: StockAnalyze }
 
@@ -43,6 +43,13 @@ function momentumLabel(momentum: DominantBrokerFlow["momentum"]) {
     INSUFFICIENT_DATA: "Data belum cukup",
   }
   return labels[momentum]
+}
+
+function behaviorBadgeClassName(label: BrokerBehaviorProfile["behavior_label"]) {
+  if (label === "Akumulator") return "bg-emerald-500/15 text-emerald-700 border-emerald-500/30 dark:text-emerald-300"
+  if (label === "Distributor") return "bg-red-500/15 text-red-700 border-red-500/30 dark:text-red-300"
+  if (label === "Trader aktif") return "bg-amber-500/15 text-amber-700 border-amber-500/30 dark:text-amber-300"
+  return "bg-muted text-muted-foreground border-border"
 }
 
 function StatItem({ label, value, tone, detail }: { label: string; value: string; tone?: string; detail?: string }) {
@@ -94,6 +101,7 @@ export function BrokerFlowAnalysis({ analyze }: BrokerFlowAnalysisProps) {
   const dominant = analyze.dominant_flow ?? null
   const coverage = analyze.coverage
   const warnings = analyze.warnings ?? []
+  const behaviorProfiles = analyze.broker_behavior_profiles ?? []
   const dominantIsAccumulation = dominant?.direction === "ACCUMULATION"
 
   return (
@@ -123,6 +131,48 @@ export function BrokerFlowAnalysis({ analyze }: BrokerFlowAnalysisProps) {
           </section>
         ) : (
           <div className="flex gap-3 rounded-lg border p-4 text-sm" role="status"><Info className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" /><p>Belum ada dominant broker yang memenuhi data minimum pada periode ini.</p></div>
+        )}
+
+        {behaviorProfiles.length > 0 && (
+          <section className="space-y-3" aria-labelledby="broker-behavior-title">
+            <div>
+              <h3 id="broker-behavior-title" className="text-base font-semibold">Perilaku Broker 20 Sesi</h3>
+              <p className="text-xs text-muted-foreground">Profil dan bukti transaksi broker dari snapshot 20 sesi terakhir yang tersedia.</p>
+              <p className="text-xs text-muted-foreground">“Ritel kecil” dan “Pemain besar” adalah indikasi dari ukuran ticket, bukan kepastian identitas nasabah.</p>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
+              {behaviorProfiles.map((profile) => (
+                <div key={profile.broker_code} className="rounded-lg border p-3">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <div className={"font-semibold " + brokerCodeClassName(profile.broker_group, profile.broker_type)}>{profile.broker_code}</div>
+                      <div className="text-xs text-muted-foreground">{profile.broker_name || "Nama broker tidak tersedia"}</div>
+                    </div>
+                    <div className="flex flex-wrap justify-end gap-1.5">
+                      <Badge variant="outline" className={brokerGroupBadgeClassName(profile.broker_group)}>{profile.broker_group || "UNKNOWN"}</Badge>
+                      <Badge variant="outline" className={behaviorBadgeClassName(profile.behavior_label)}>{profile.behavior_label}</Badge>
+                    </div>
+                  </div>
+                  <div className="mt-3 grid grid-cols-2 gap-2 text-xs sm:grid-cols-5">
+                    <div><div className="text-muted-foreground">Aktif</div><div className="font-semibold">{profile.active_sessions}/{profile.effective_sessions}</div></div>
+                    <div><div className="text-muted-foreground">Net buy</div><div className="font-semibold">{profile.net_buy_sessions} sesi</div></div>
+                    <div><div className="text-muted-foreground">B FREQ</div><div className="font-semibold">{profile.buy_frequency.toLocaleString("id-ID")}</div></div>
+                    <div><div className="text-muted-foreground">B AVG</div><div className="font-semibold">{profile.buy_avg_price > 0 ? formatIDR(profile.buy_avg_price) : "—"}</div></div>
+                    <div><div className="text-muted-foreground">S FREQ</div><div className="font-semibold">{profile.sell_frequency.toLocaleString("id-ID")}</div></div>
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                    <span>B LOT {formatBigNumber(profile.buy_lot)}</span>
+                    <span>B VAL Rp{formatBigNumber(profile.buy_value)}</span>
+                    <span>S LOT {formatBigNumber(profile.sell_lot)}</span>
+                    <span>S VAL Rp{formatBigNumber(profile.sell_value)}</span>
+                    <span>Net {profile.net_value >= 0 ? "+" : "−"}Rp{formatBigNumber(Math.abs(profile.net_value))}</span>
+                    <span>S AVG {profile.sell_avg_price > 0 ? formatIDR(profile.sell_avg_price) : "—"}</span>
+                    <span>{profile.ticket_label}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
         )}
 
         {(coverage || warnings.length > 0) && (
