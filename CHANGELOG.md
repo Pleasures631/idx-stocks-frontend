@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-09-12] Daily Broker Flow Raw Fields
+
+- Tabel Broker Summary harian pada halaman saham sekarang menampilkan B LOT, B FREQ, B AVG, B VAL dan field sell equivalents langsung dari API existing.
+- Nilai frequency yang kosong ditampilkan sebagai `—`; tidak ada kalkulasi ticket, klasifikasi tambahan, forecast, atau redesign menu.
+- QA PASSED: lint, TypeScript, production build, dan review field harian terhadap kontrak backend.
+
 ## [2026-09-12] Broker Flow Distribution Browser Sweep
 
 - Menambahkan launcher browser terpisah untuk menjalankan 20 variasi Broker Flow arah distribusi dengan persistence dan reuse batch ID yang sama seperti sweep akumulasi.

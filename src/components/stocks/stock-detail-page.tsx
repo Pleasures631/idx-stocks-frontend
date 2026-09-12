@@ -553,35 +553,41 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
                       <h3 className="text-sm font-semibold text-emerald-500">Broker Buy</h3>
                       <p className="text-xs text-muted-foreground">Diurutkan berdasarkan nilai beli</p>
                     </div>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Broker</TableHead>
-                          <TableHead className="text-right">Value</TableHead>
-                          <TableHead className="text-right">Avg Buy</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {buyBrokerRows.length === 0 ? (
+                    <div className="overflow-x-auto">
+                      <Table className="min-w-[560px]">
+                        <TableHeader>
                           <TableRow>
-                            <TableCell colSpan={3} className="py-6 text-center text-sm text-muted-foreground">
-                              Tidak ada data buy
-                            </TableCell>
+                            <TableHead>Broker</TableHead>
+                            <TableHead className="text-right">B LOT</TableHead>
+                            <TableHead className="text-right">B FREQ</TableHead>
+                            <TableHead className="text-right">B AVG</TableHead>
+                            <TableHead className="text-right">B VAL</TableHead>
                           </TableRow>
-                        ) : (
-                          buyBrokerRows.map((broker) => (
-                            <TableRow key={broker.broker_code}>
-                              <TableCell>
-                                <div className="font-medium">{broker.broker_name}</div>
-                                <div className="text-xs text-muted-foreground">{broker.broker_type} · {broker.broker_code}</div>
+                        </TableHeader>
+                        <TableBody>
+                          {buyBrokerRows.length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={5} className="py-6 text-center text-sm text-muted-foreground">
+                                Tidak ada data buy
                               </TableCell>
-                              <TableCell className="text-right">{formatIDR(broker.buy_value)}</TableCell>
-                              <TableCell className="text-right">{broker.buy_avg_price > 0 ? formatIDR(broker.buy_avg_price) : "—"}</TableCell>
                             </TableRow>
-                          ))
-                        )}
-                      </TableBody>
-                    </Table>
+                          ) : (
+                            buyBrokerRows.map((broker) => (
+                              <TableRow key={broker.broker_code}>
+                                <TableCell>
+                                  <div className="font-medium">{broker.broker_name}</div>
+                                  <div className="text-xs text-muted-foreground">{broker.broker_type} · {broker.broker_code}</div>
+                                </TableCell>
+                                <TableCell className="text-right">{formatBigNumber(broker.buy_lot)}</TableCell>
+                                <TableCell className="text-right">{broker.buy_frequency == null ? "—" : broker.buy_frequency.toLocaleString("id-ID")}</TableCell>
+                                <TableCell className="text-right">{broker.buy_avg_price > 0 ? formatIDR(broker.buy_avg_price) : "—"}</TableCell>
+                                <TableCell className="text-right">Rp{formatBigNumber(broker.buy_value)}</TableCell>
+                              </TableRow>
+                            ))
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
                   </div>
 
                   <div className="rounded-lg border border-border/60">
@@ -589,35 +595,41 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
                       <h3 className="text-sm font-semibold text-red-500">Broker Sell</h3>
                       <p className="text-xs text-muted-foreground">Diurutkan berdasarkan nilai jual</p>
                     </div>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Broker</TableHead>
-                          <TableHead className="text-right">Value</TableHead>
-                          <TableHead className="text-right">Avg Sell</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {sellBrokerRows.length === 0 ? (
+                    <div className="overflow-x-auto">
+                      <Table className="min-w-[560px]">
+                        <TableHeader>
                           <TableRow>
-                            <TableCell colSpan={3} className="py-6 text-center text-sm text-muted-foreground">
-                              Tidak ada data sell
-                            </TableCell>
+                            <TableHead>Broker</TableHead>
+                            <TableHead className="text-right">S LOT</TableHead>
+                            <TableHead className="text-right">S FREQ</TableHead>
+                            <TableHead className="text-right">S AVG</TableHead>
+                            <TableHead className="text-right">S VAL</TableHead>
                           </TableRow>
-                        ) : (
-                          sellBrokerRows.map((broker) => (
-                            <TableRow key={broker.broker_code}>
-                              <TableCell>
-                                <div className="font-medium">{broker.broker_name}</div>
-                                <div className="text-xs text-muted-foreground">{broker.broker_type} · {broker.broker_code}</div>
+                        </TableHeader>
+                        <TableBody>
+                          {sellBrokerRows.length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={5} className="py-6 text-center text-sm text-muted-foreground">
+                                Tidak ada data sell
                               </TableCell>
-                              <TableCell className="text-right">{formatIDR(broker.sell_value)}</TableCell>
-                              <TableCell className="text-right">{broker.sell_avg_price > 0 ? formatIDR(broker.sell_avg_price) : "—"}</TableCell>
                             </TableRow>
-                          ))
-                        )}
-                      </TableBody>
-                    </Table>
+                          ) : (
+                            sellBrokerRows.map((broker) => (
+                              <TableRow key={broker.broker_code}>
+                                <TableCell>
+                                  <div className="font-medium">{broker.broker_name}</div>
+                                  <div className="text-xs text-muted-foreground">{broker.broker_type} · {broker.broker_code}</div>
+                                </TableCell>
+                                <TableCell className="text-right">{formatBigNumber(broker.sell_lot)}</TableCell>
+                                <TableCell className="text-right">{broker.sell_frequency == null ? "—" : broker.sell_frequency.toLocaleString("id-ID")}</TableCell>
+                                <TableCell className="text-right">{broker.sell_avg_price > 0 ? formatIDR(broker.sell_avg_price) : "—"}</TableCell>
+                                <TableCell className="text-right">Rp{formatBigNumber(broker.sell_value)}</TableCell>
+                              </TableRow>
+                            ))
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
                   </div>
                 </div>
               )}

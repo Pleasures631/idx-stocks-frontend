@@ -149,6 +149,8 @@ export interface BrokerSummaryEntry {
   net_value: number
   buy_avg_price: number
   sell_avg_price: number
+  buy_frequency?: number
+  sell_frequency?: number
   frequency: number
 }
 
@@ -186,6 +188,8 @@ export interface AnalyzeBrokerFlow {
   buy_lot: number
   sell_lot: number
   net_lot: number
+  /** Total BUY transaction frequency reported by Exodus for the analysis window. */
+  buy_frequency?: number
   buy_avg_price: number
   sell_avg_price: number
   active_days: number

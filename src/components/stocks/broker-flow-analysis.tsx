@@ -49,19 +49,33 @@ function StatItem({ label, value, tone, detail }: { label: string; value: string
 }
 
 function FlowTable({ title, rows, side }: { title: string; rows: AnalyzeBrokerFlow[]; side: "buy" | "sell" }) {
-  const priceLabel = side === "buy" ? "Avg Buy" : "Avg Sell"
+  const isBuy = side === "buy"
+  const priceLabel = isBuy ? "Avg Buy" : "Avg Sell"
   return (
     <div className="space-y-2">
       <h4 className="text-sm font-semibold">{title}</h4>
       <div className="overflow-x-auto rounded-md border">
         <Table>
-          <TableHeader><TableRow><TableHead>Broker</TableHead><TableHead className="text-right">Net</TableHead><TableHead className="text-right">{priceLabel}</TableHead><TableHead className="text-right">Active Days</TableHead></TableRow></TableHeader>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Broker</TableHead>
+              <TableHead className="text-right">Net</TableHead>
+              {isBuy && <TableHead className="text-right">B LOT</TableHead>}
+              {isBuy && <TableHead className="text-right">B FREQ</TableHead>}
+              <TableHead className="text-right">{isBuy ? "B AVG" : priceLabel}</TableHead>
+              {isBuy && <TableHead className="text-right">B VAL</TableHead>}
+              <TableHead className="text-right">Active Days</TableHead>
+            </TableRow>
+          </TableHeader>
           <TableBody>
-            {rows.length === 0 ? <TableRow><TableCell colSpan={4} className="py-6 text-center text-sm text-muted-foreground">Tidak ada data</TableCell></TableRow> : rows.slice(0, 3).map((row) => (
+            {rows.length === 0 ? <TableRow><TableCell colSpan={isBuy ? 7 : 4} className="py-6 text-center text-sm text-muted-foreground">Tidak ada data</TableCell></TableRow> : rows.slice(0, 3).map((row) => (
               <TableRow key={row.broker_code}>
                 <TableCell><div className="font-medium">{row.broker_code}</div><div className="text-xs text-muted-foreground">{row.broker_type}</div></TableCell>
                 <TableCell className={`text-right font-medium ${flowTone(row.net_value)}`}>{row.formatted_net_value}</TableCell>
-                <TableCell className="text-right">{(side === "buy" ? row.buy_avg_price : row.sell_avg_price) > 0 ? formatIDR(side === "buy" ? row.buy_avg_price : row.sell_avg_price) : "—"}</TableCell>
+                {isBuy && <TableCell className="text-right">{formatBigNumber(row.buy_lot)}</TableCell>}
+                {isBuy && <TableCell className="text-right">{row.buy_frequency == null ? "—" : row.buy_frequency.toLocaleString("id-ID")}</TableCell>}
+                <TableCell className="text-right">{(isBuy ? row.buy_avg_price : row.sell_avg_price) > 0 ? formatIDR(isBuy ? row.buy_avg_price : row.sell_avg_price) : "—"}</TableCell>
+                {isBuy && <TableCell className="text-right">Rp{formatBigNumber(row.buy_value)}</TableCell>}
                 <TableCell className="text-right">{row.active_days}</TableCell>
               </TableRow>
             ))}
