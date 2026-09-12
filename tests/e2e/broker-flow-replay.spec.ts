@@ -22,7 +22,7 @@ function analyzeResponse(to: string) {
       start_date: "2026-05-01",
       end_date: to,
       total_days: 5,
-      phase: "ACCUMULATION",
+      phase: "BIG MONEY ACCUMULATION",
       total_buy_value: 100000000,
       total_sell_value: 80000000,
       net_value: 20000000,
@@ -61,7 +61,7 @@ function analyzeResponse(to: string) {
       formatted_foreign_net: "30M",
       brokers_accumulation: [{ broker_code: "AK", broker_type: "Asing", broker_group: "FOREIGN", buy_value: 50000000, sell_value: 10000000, net_value: 40000000, buy_lot: 1, sell_lot: -1, net_lot: 0, buy_avg_price: 1000, sell_avg_price: 1000, active_days: 4, formatted_net_value: "40M", display_status: "AK | Net: 40M" }],
       brokers_distribution: [{ broker_code: "CC", broker_type: "Lokal", broker_group: "RETAIL", buy_value: 10000000, sell_value: 30000000, net_value: -20000000, buy_lot: 1, sell_lot: -1, net_lot: 0, buy_avg_price: 1000, sell_avg_price: 1000, active_days: 4, formatted_net_value: "-20M", display_status: "CC | Net: -20M" }],
-      display_status: "ACCUMULATION",
+      display_status: "BIG MONEY ACCUMULATION",
       dominant_flow: {
         broker_code: "AK",
         broker_name: "AK Securities",
@@ -112,6 +112,7 @@ test("replays broker flow indicators at weekly historical snapshots", async ({ p
   await expect(page.getByText("2026-05-11", { exact: true })).toBeVisible()
   await expect(page.getByText("2026-05-25", { exact: true })).toBeVisible()
   await expect(page.getByText("2026-06-02", { exact: true })).toBeVisible()
+  await expect(page.getByText("Akumulasi Big Money").first()).toBeVisible()
   expect(analyzeRequests.some((url) => url.includes("from=2026-05-05") && url.includes("to=2026-05-11"))).toBe(true)
   expect(analyzeRequests.some((url) => url.includes("from=2026-05-19") && url.includes("to=2026-05-25"))).toBe(true)
   expect(analyzeRequests.some((url) => url.includes("from=2026-05-27") && url.includes("to=2026-06-02"))).toBe(true)

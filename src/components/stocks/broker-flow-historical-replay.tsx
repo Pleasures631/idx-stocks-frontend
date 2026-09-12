@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input"
 import { formatBigNumber } from "@/lib/utils"
 import { stocksService } from "@/services/stocks"
 import type { StockAnalyze } from "@/types"
+import { getBrokerFlowStatus } from "./broker-flow-status"
 
 const DEFAULT_SNAPSHOT_DATES = ["2026-05-11", "2026-05-25", "2026-06-02"]
 
@@ -26,18 +27,11 @@ function weekStart(date: string) {
 }
 
 function snapshotLabel(analyze: StockAnalyze) {
-  if (analyze.retail_absorption) return "Distribusi (Retail Absorption)"
-  if (analyze.dominant_flow?.direction === "DISTRIBUTION") return "Distribusi"
-  if (analyze.dominant_flow?.broker_group === "RETAIL") return "Akumulasi (Retail)"
-  if (analyze.dominant_flow?.direction === "ACCUMULATION") return "Akumulasi"
-  return analyze.phase || "Belum jelas"
+  return getBrokerFlowStatus(analyze).label
 }
 
 function snapshotVariant(analyze: StockAnalyze): "success" | "warning" | "destructive" | "secondary" {
-  if (analyze.retail_absorption || analyze.dominant_flow?.broker_group === "RETAIL") return "warning"
-  if (analyze.dominant_flow?.direction === "DISTRIBUTION") return "destructive"
-  if (analyze.dominant_flow?.direction === "ACCUMULATION") return "success"
-  return "secondary"
+  return getBrokerFlowStatus(analyze).variant
 }
 
 function formatGroupValue(value: number | undefined) {
@@ -74,6 +68,7 @@ function SnapshotCard({ result }: { result: ReplayResult }) {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        {analyze.dominant_flow && <div className="rounded-md border border-orange-500/30 bg-orange-500/5 p-3 text-sm"><span className="text-muted-foreground">Dominant broker: </span><strong>{analyze.dominant_flow.broker_code} {analyze.dominant_flow.direction === "ACCUMULATION" ? "BUY" : "SELL"}</strong><span className="ml-2 text-muted-foreground">{analyze.dominant_flow.formatted_net_value}</span></div>}
         <div className="grid grid-cols-2 gap-2 text-sm">
           <div className="rounded-md border border-orange-500/30 bg-orange-500/5 p-3">
             <div className="text-xs text-muted-foreground">Retail Net</div>
