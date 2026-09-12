@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-09-13] Wyckoff Connector Visibility
+
+- Kepala panah dipindahkan ke celah antar-node agar tidak tertutup lingkaran fase.
+- Constellation memakai simbol bintang yang lebih jelas dengan glow dan pulse ringan.
+- QA PASSED: lint, TypeScript, dan Playwright broker-flow replay.
+
 ## [2026-09-13] Wyckoff Roadmap Visual Polish
 
 - Memperbaiki posisi konektor panah agar tepat menghubungkan titik fase.
