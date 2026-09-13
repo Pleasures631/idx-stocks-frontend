@@ -3,6 +3,7 @@
 import { Sidebar } from "./sidebar"
 import { TopNav } from "./top-nav"
 import { BottomNav } from "./bottom-nav"
+import { SiteFooter } from "./site-footer"
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -13,6 +14,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <main className="flex-1 overflow-y-auto p-4 pb-20 md:p-6 md:pb-6">
           {children}
         </main>
+        <SiteFooter />
         <BottomNav />
       </div>
     </div>

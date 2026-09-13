@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { useState, type FormEvent } from "react"
+import { useRef, useState, type FormEvent } from "react"
 import Link from "next/link"
 import { Loader2 } from "lucide-react"
 import axios from "axios"
@@ -22,6 +22,9 @@ export function RegisterForm() {
   const [verificationError, setVerificationError] = useState("")
   const [verifying, setVerifying] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [termsRead, setTermsRead] = useState(false)
+  const [termsAccepted, setTermsAccepted] = useState(false)
+  const termsRef = useRef<HTMLDivElement>(null)
 
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -29,6 +32,7 @@ export function RegisterForm() {
   })
 
   const onSubmit = async (data: RegisterFormData) => {
+    if (!termsAccepted) return
     setLoading(true)
     setError("")
     try {
@@ -153,7 +157,44 @@ export function RegisterForm() {
             <Input id="confirmPassword" type="password" {...form.register("confirmPassword")} className="h-11" />
             {form.formState.errors.confirmPassword && <p className="text-xs text-destructive">{form.formState.errors.confirmPassword.message}</p>}
           </div>
-          <Button type="submit" className="h-11 w-full" disabled={loading}>
+          <div className="space-y-3 rounded-md border bg-muted/30 p-3">
+            <p className="text-sm font-medium">Syarat & Ketentuan</p>
+            <div
+              ref={termsRef}
+              onScroll={(event) => {
+                const element = event.currentTarget
+                if (element.scrollTop + element.clientHeight >= element.scrollHeight - 2) setTermsRead(true)
+              }}
+              tabIndex={0}
+              role="region"
+              aria-label="Syarat dan Ketentuan Yapping Saham"
+              className="h-32 overflow-y-auto rounded border bg-background p-3 text-xs leading-5 text-muted-foreground"
+            >
+              <p className="font-medium text-foreground">Dengan menggunakan Yapping Saham, Anda menyetujui bahwa:</p>
+              <ul className="mt-2 list-disc space-y-1 pl-4">
+                <li>Layanan digunakan secara sah dan Anda menjaga keamanan akun sendiri.</li>
+                <li>Data pasar dapat tertunda, tidak lengkap, atau memiliki kesalahan.</li>
+                <li>Informasi bukan nasihat investasi, instruksi beli/jual, atau jaminan keuntungan.</li>
+                <li>Aktivasi manual berlaku selama periode yang disetujui, termasuk 30 hari bila dinyatakan.</li>
+                <li>Ketentuan lengkap tersedia di halaman <Link href="/terms" className="text-foreground underline">Syarat & Ketentuan</Link>.</li>
+              </ul>
+              <p className="mt-2">Gulir sampai akhir untuk mengaktifkan persetujuan.</p>
+            </div>
+            <label className={`flex items-start gap-2 text-sm ${termsRead ? "cursor-pointer" : "cursor-not-allowed text-muted-foreground"}`}>
+              <input
+                type="checkbox"
+                checked={termsAccepted}
+                disabled={!termsRead}
+                onChange={(event) => setTermsAccepted(event.target.checked)}
+                aria-label="Saya menyetujui Syarat & Ketentuan"
+                className="mt-1 h-4 w-4 accent-primary"
+              />
+              <span>Saya telah membaca dan menyetujui Syarat & Ketentuan.</span>
+            </label>
+            {!termsRead && <p className="text-xs text-amber-600 dark:text-amber-400">Baca dan gulir sampai bawah sebelum mencentang persetujuan.</p>}
+            {termsRead && !termsAccepted && <p className="text-xs text-destructive">Persetujuan Syarat & Ketentuan wajib untuk mendaftar.</p>}
+          </div>
+          <Button type="submit" className="h-11 w-full" disabled={loading || !termsAccepted}>
             {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving profile...</> : "Create profile"}
           </Button>
           <p className="text-center text-sm text-muted-foreground">

@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-09-13] Legal, Privacy, and Account Controls
+
+- Menambahkan halaman publik `/privacy`, `/terms`, dan `/disclaimer` berbahasa Indonesia dengan penjelasan privasi, penggunaan data, retensi, hak pengguna, batasan data pasar, aktivasi manual 30 hari, serta disclaimer investasi eksplisit.
+- Menambahkan tautan legal pada footer, Settings, login, dan register.
+- Settings kini menyediakan ekspor JSON melalui `GET /account/export-data` dan permintaan hapus akun melalui `DELETE /account` dengan konfirmasi tepat `DELETE MY ACCOUNT`, termasuk state loading/success/error dan logout setelah berhasil.
+- Form register mewajibkan pengguna menggulir Syarat & Ketentuan sampai bawah sebelum checkbox persetujuan aktif; submit tetap nonaktif sampai persetujuan dicentang.
+- Menambahkan Playwright discovery untuk route legal dan guard persetujuan register.
+- Validation: `npm run lint`, `npx tsc --noEmit`, `npm run build`, Playwright discovery, dan `git diff --check`.
+
 ## [2026-09-13] Scalable Admin User List
 
 - Admin user search now uses debounced backend queries with explicit `q`, `limit`, and `offset` parameters instead of downloading and filtering every account in the browser.
