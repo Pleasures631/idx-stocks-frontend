@@ -107,7 +107,7 @@ export function WyckoffOrbitalRoadmap({ roadmap, replayRoadmaps = [] }: WyckoffO
             <Badge className="border-orange-300/40 bg-orange-400/15 text-orange-100">{useReplay ? "Snapshot Replay" : baseRoadmap.phase_label}</Badge>
           </div>
         </div>
-        <CardDescription className="text-slate-400">{useReplay ? "Header flow memakai window replay 7 hari; fase Wyckoff membaca struktur 60 sesi sampai tiap tanggal snapshot." : `Fase terakhir ${baseRoadmap.effective_end_date} - struktur ${baseRoadmap.observed_sessions} sesi - bukan prediksi harga`}</CardDescription>
+        <CardDescription className="text-slate-400">{useReplay ? "Replay memakai satu window terpadu 60 sesi perdagangan sampai tiap tanggal snapshot untuk broker flow dan fase Wyckoff." : `Fase terakhir ${baseRoadmap.effective_end_date} - struktur ${baseRoadmap.observed_sessions} sesi - bukan prediksi harga`}</CardDescription>
       </CardHeader>
       <CardContent className="relative space-y-5">
         {useReplay && replayAvailable ? (
@@ -118,7 +118,7 @@ export function WyckoffOrbitalRoadmap({ roadmap, replayRoadmaps = [] }: WyckoffO
                   <span className="text-sm font-semibold text-orange-100">Snapshot {snapshot.date}</span>
                   <Badge className="border-orange-300/40 bg-orange-400/15 text-orange-100">{snapshot.roadmap.phase_label}</Badge>
                 </div>
-                <div className="text-xs text-slate-400">Struktur Wyckoff: {snapshot.roadmap.observed_sessions} sesi ({snapshot.roadmap.effective_start_date} - {snapshot.roadmap.effective_end_date})</div>
+                <div className="text-xs text-slate-400">Window terpadu: 60 sesi perdagangan · Struktur Wyckoff {snapshot.roadmap.observed_sessions} sesi ({snapshot.roadmap.effective_start_date} - {snapshot.roadmap.effective_end_date})</div>
                 <RoadmapTrack roadmap={snapshot.roadmap} />
                 <RoadmapSummary roadmap={snapshot.roadmap} />
               </div>

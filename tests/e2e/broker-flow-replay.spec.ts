@@ -21,7 +21,7 @@ function analyzeResponse(to: string) {
       symbol: "CUAN",
       start_date: "2026-05-01",
       end_date: to,
-      total_days: 5,
+      total_days: 60,
       phase: "BIG MONEY ACCUMULATION",
       total_buy_value: 100000000,
       total_sell_value: 80000000,
@@ -84,7 +84,7 @@ function analyzeResponse(to: string) {
         price_position_pct: 0.05,
         price_confirmation: "CONFIRMED",
       },
-      coverage: { requested_start_date: "2026-05-05", requested_end_date: to, effective_start_date: "2026-05-05", effective_end_date: to, eligible_sessions: 5, covered_sessions: 5, coverage_ratio: 1, source: "Exodus", data_scope: "top_25_each_side", is_truncated: true, per_side_limit: 25 },
+      coverage: { requested_start_date: "2026-03-01", requested_end_date: to, effective_start_date: "2026-03-01", effective_end_date: to, eligible_sessions: 60, covered_sessions: 60, coverage_ratio: 1, source: "Exodus", data_scope: "top_25_each_side", is_truncated: true, per_side_limit: 25 },
       warnings: [],
       broker_behavior_profiles: [],
       wyckoff_roadmap: {
@@ -102,7 +102,7 @@ function analyzeResponse(to: string) {
   }
 }
 
-test("replays broker flow indicators at weekly historical snapshots", async ({ page }) => {
+test("replays broker flow indicators on a unified 60-session window", async ({ page }) => {
   const analyzeRequests: string[] = []
   await page.route("http://localhost:8080/stocks/CUAN**", async (route) => {
     const url = route.request().url()
@@ -141,12 +141,14 @@ test("replays broker flow indicators at weekly historical snapshots", async ({ p
   await expect(page.getByText("Wyckoff Orbital Roadmap")).toBeVisible()
   await expect(page.getByText("SOS - Sign of Strength")).toBeVisible()
   await page.getByRole("switch", { name: "Gunakan roadmap replay" }).click()
-  await expect(page.getByText("Header flow memakai window replay 7 hari; fase Wyckoff membaca struktur 60 sesi sampai tiap tanggal snapshot.")).toBeVisible()
+  await expect(page.getByText("Replay memakai satu window terpadu 60 sesi perdagangan sampai tiap tanggal snapshot untuk broker flow dan fase Wyckoff.")).toBeVisible()
   await expect(page.getByText("Snapshot 2026-05-11")).toBeVisible()
+  await expect(page.getByText("Window terpadu: 60 sesi perdagangan · Struktur Wyckoff 60 sesi (2026-03-01 - 2026-05-11)")).toBeVisible()
   await page.getByRole("tab", { name: "Broker Summary" }).click()
   await page.getByRole("tab", { name: "Analisis Broker Flow" }).click()
   await expect(page.getByText("Akumulasi Big Money").first()).toBeVisible()
-  expect(analyzeRequests.some((url) => url.includes("from=2026-05-05") && url.includes("to=2026-05-11"))).toBe(true)
-  expect(analyzeRequests.some((url) => url.includes("from=2026-05-19") && url.includes("to=2026-05-25"))).toBe(true)
-  expect(analyzeRequests.some((url) => url.includes("from=2026-05-27") && url.includes("to=2026-06-02"))).toBe(true)
+  const replayRequests = analyzeRequests.map((request) => new URL(request).searchParams)
+  expect(replayRequests.some((params) => params.get("to") === "2026-05-11" && params.get("lookback_sessions") === "60" && !params.has("from"))).toBe(true)
+  expect(replayRequests.some((params) => params.get("to") === "2026-05-25" && params.get("lookback_sessions") === "60" && !params.has("from"))).toBe(true)
+  expect(replayRequests.some((params) => params.get("to") === "2026-06-02" && params.get("lookback_sessions") === "60" && !params.has("from"))).toBe(true)
 })

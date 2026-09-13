@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-09-13] Unified 60-Session Replay Window
+
+- Replay tidak lagi menghitung window kalender 7 hari; setiap snapshot mengirim `to` dan `lookback_sessions=60` tanpa `from`.
+- Card snapshot dan roadmap menampilkan coverage window terpadu broker flow + Wyckoff.
+- QA PASSED: lint, TypeScript, production build, dan Playwright broker-flow replay.
+
 ## [2026-09-13] Wyckoff Replay Window Context
 
 - Menjelaskan di mode Replay bahwa header flow memakai window 7 hari, sementara roadmap Wyckoff memakai struktur 60 sesi sampai tanggal snapshot.
