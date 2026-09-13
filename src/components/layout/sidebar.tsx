@@ -15,9 +15,11 @@ import {
   Orbit,
   ChevronLeft,
   ChevronRight,
+  ShieldCheck,
 } from "lucide-react"
 import { useState } from "react"
 import { BrandMark } from "@/components/brand/brand-mark"
+import { useAuthStore } from "@/stores/auth-store"
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -34,6 +36,7 @@ const navItems = [
 export function Sidebar() {
   const pathname = usePathname()
   const [collapsed, setCollapsed] = useState(false)
+  const isAdmin = useAuthStore((state) => state.user?.role === "admin")
 
   return (
     <aside
@@ -52,7 +55,7 @@ export function Sidebar() {
         </button>
       </div>
       <nav className="flex-1 space-y-1 p-2">
-        {navItems.map((item) => {
+        {[...navItems, ...(isAdmin ? [{ label: "Admin", href: "/admin", icon: ShieldCheck }] : [])].map((item) => {
           const isActive = pathname.startsWith(item.href)
           return (
             <Link

@@ -678,6 +678,7 @@ export interface AuthUser {
   email: string
   name: string
   created_at: string
+  role?: "user" | "admin"
 }
 
 export interface LoginRequest {

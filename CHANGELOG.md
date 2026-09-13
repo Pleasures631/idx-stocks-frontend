@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-09-13] Admin Backoffice MVP
+
+- Menambahkan route `/admin` terlindungi dengan shell backoffice, ringkasan dashboard, tabel pengguna, status subscription, dan aktivitas audit terbaru.
+- Admin dapat mengaktifkan 30 hari, memperpanjang 30 hari, mengakhiri subscription, serta mengubah role dengan konfirmasi dan state loading/error/success.
+- Pengguna biasa tidak melihat menu Admin dan menerima halaman akses ditolak tanpa request data admin.
+- Validation: `npm run lint` passed; `npx tsc --noEmit` passed; `npm run build` passed; Playwright test discovery passed. Admin Playwright execution timed out while starting the configured dev server.
+
 ## [2026-09-13] Hide Broker Backtest Navigation
 
 - Menghapus menu Broker Backtest dari sidebar desktop dan mobile drawer.
