@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-09-13] Tab-Isolated Auth and Admin Dashboard Polish
+
+- Active authentication state now lives in each tab's `sessionStorage`; refresh, hydrate, and logout no longer clear or replace another tab's account.
+- Remember-me sessions are stored in per-user localStorage records and copied into a tab only during hydration, preventing accounts from overwriting one another.
+- Refined the admin backoffice hierarchy, responsive users table, summary cards, action progress states, feedback messaging, and audit/empty/error states while keeping backend authorization authoritative.
+- Added Playwright coverage proving admin and regular-user sessions remain isolated across tabs.
+
 ## [2026-09-13] Admin Backoffice MVP
 
 - Menambahkan route `/admin` terlindungi dengan shell backoffice, ringkasan dashboard, tabel pengguna, status subscription, dan aktivitas audit terbaru.
