@@ -8,7 +8,15 @@ Frontend for an Indonesia Stock Exchange (IDX) dashboard — stocks listing, wat
 - Tailwind CSS + shadcn/ui (Radix primitives)
 - Zustand (state), Zod (validation), Axios (HTTP)
 - Recharts (charts)
+- Lucide React (ISC icons)
+- Local dependency-free market instrument strip (`src/components/dashboard/market-ticker-tape.tsx`)
 - Mock data layer (`src/lib/mock`, `src/services/exodus`) — swap to live backend by changing `NEXT_PUBLIC_API_BASE_URL`
+
+## Open-Source and External Services
+
+All npm dependencies are open-source packages. Direct dependency license declarations are recorded in `package-lock.json`; the installed package metadata was audited against the lockfile and package `LICENSE` files. UI primitives come from Radix UI, icons from Lucide React, and charts from Recharts. No proprietary UI SDK, commercial icon/font bundle, Lottie animation, analytics SDK, or embedded widget is bundled.
+
+The frontend does call the configured backend through `NEXT_PUBLIC_API_BASE_URL`. That backend may source market data from providers such as IDX/Stockbit or Exodus; those are data/API providers, not frontend libraries, and their terms and licensing are outside this repository. Education links point to the configured `saham.jamet.id` source site. The dashboard does not load TradingView or any other third-party UI script at runtime.
 
 ## Getting Started
 

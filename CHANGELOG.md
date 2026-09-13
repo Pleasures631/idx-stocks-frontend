@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-09-13] Open-Source Frontend Dependency Audit
+
+- Removed the TradingView ticker-tape embed and replaced it with a local, dependency-free instrument strip; no third-party UI script is loaded at runtime.
+- Removed the unlicensed `public/lottie/basic spinner.lottie` asset; no Lottie or proprietary font/icon asset is bundled.
+- Audited direct npm dependencies and the installed transitive package metadata. Licenses are MIT, ISC, Apache-2.0, or other permissive/open-source licenses recorded by npm; `busboy` and `streamsearch` declare MIT through their installed `licenses` metadata and LICENSE files.
+- Documented the distinction between frontend open-source dependencies and configured backend/data providers in README.
+
+
 ## [2026-09-13] Legal, Privacy, and Account Controls
 
 - Menambahkan halaman publik `/privacy`, `/terms`, dan `/disclaimer` berbahasa Indonesia dengan penjelasan privasi, penggunaan data, retensi, hak pengguna, batasan data pasar, aktivasi manual 30 hari, serta disclaimer investasi eksplisit.

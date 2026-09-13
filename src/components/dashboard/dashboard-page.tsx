@@ -11,7 +11,7 @@ import { formatPercent, formatBigNumber } from "@/lib/utils"
 import { TrendingUp, TrendingDown, Briefcase, BarChart3, ArrowUpRight } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { TradingViewTickerTape } from "@/components/dashboard/tradingview-ticker-tape"
+import { MarketTickerTape } from "@/components/dashboard/market-ticker-tape"
 import type { StockbitIHSGChartPoint, StockbitIHSGQuote } from "@/types"
 
 interface Mover {
@@ -137,7 +137,7 @@ export function DashboardPage() {
         <p className="text-muted-foreground">Market overview and portfolio summary</p>
       </div>
 
-      <TradingViewTickerTape />
+      <MarketTickerTape />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {loading ? (
