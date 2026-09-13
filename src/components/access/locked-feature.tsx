@@ -18,10 +18,10 @@ export function hasFeatureAccess(user: AuthUser | null, feature: PremiumFeature)
   if (user.role === "admin") return true
   const explicit = user.access?.features?.[feature]
   if (typeof explicit === "boolean") return explicit
-  // Older persisted sessions and API fixtures may not carry the summary yet;
-  // only an explicit inactive/denied summary should gate the UI.
-  if (!user.subscription && !user.access) return true
-  return user.subscription?.status === "active" || user.access?.is_active === true || user.access?.active === true
+  // Entitlements fail closed: a missing or stale summary must never grant premium access.
+  if (user.subscription?.status === "active") return true
+  if (user.access?.is_active === true || user.access?.active === true) return true
+  return false
 }
 
 export function LockedFeature({ feature }: { feature: PremiumFeature }) {

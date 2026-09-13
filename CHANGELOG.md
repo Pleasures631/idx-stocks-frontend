@@ -27,6 +27,7 @@
 
 ## [2026-09-13] Inactive Account Feature Gating
 
+- Premium entitlements now fail closed: non-admin users without an explicit active subscription/access summary are locked instead of being granted access by legacy persisted sessions or incomplete API responses.
 - Hydrate subscription and access summaries from `/auth/me` while keeping inactive accounts logged in for basic dashboard use.
 - Added explicit premium gates and lock indicators for Broker Flow Analysis, Broker Flow Backtest, and Wyckoff, including direct-route locked states.
 - Admin users retain access regardless of subscription status; added Playwright coverage for inactive locks and admin access.
