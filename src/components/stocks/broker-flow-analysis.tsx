@@ -1,7 +1,9 @@
 "use client"
 
 import { AlertTriangle, Info } from "lucide-react"
+import { useState } from "react"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { formatBigNumber, formatIDR } from "@/lib/utils"
@@ -50,6 +52,10 @@ function StatItem({ label, value, tone, detail }: { label: string; value: string
 
 function FlowTable({ title, rows, side, profiles }: { title: string; rows: AnalyzeBrokerFlow[]; side: "buy" | "sell"; profiles: BrokerBehaviorProfile[] }) {
   const isBuy = side === "buy"
+  const [visibleCount, setVisibleCount] = useState(3)
+  const maxRows = 10
+  const visibleRows = rows.slice(0, Math.min(visibleCount, maxRows))
+  const canLoadMore = visibleRows.length < Math.min(rows.length, maxRows)
   const profileByCode = new Map(profiles.map((profile) => [profile.broker_code, profile]))
   return (
     <div className="space-y-2">
@@ -68,7 +74,7 @@ function FlowTable({ title, rows, side, profiles }: { title: string; rows: Analy
             </TableRow>
           </TableHeader>
           <TableBody>
-            {rows.length === 0 ? <TableRow><TableCell colSpan={7} className="py-6 text-center text-sm text-muted-foreground">Tidak ada data</TableCell></TableRow> : rows.slice(0, 3).map((row) => (
+            {rows.length === 0 ? <TableRow><TableCell colSpan={7} className="py-6 text-center text-sm text-muted-foreground">Tidak ada data</TableCell></TableRow> : visibleRows.map((row) => (
               <TableRow key={row.broker_code}>
                 <TableCell>
                   <div className="flex flex-wrap items-center gap-1.5">
@@ -93,6 +99,7 @@ function FlowTable({ title, rows, side, profiles }: { title: string; rows: Analy
           </TableBody>
         </Table>
       </div>
+      {canLoadMore && <Button type="button" variant="outline" size="sm" onClick={() => setVisibleCount((count) => Math.min(count + 3, maxRows))}>Muat lebih banyak ({Math.min(rows.length, maxRows) - visibleRows.length} tersisa)</Button>}
     </div>
   )
 }
