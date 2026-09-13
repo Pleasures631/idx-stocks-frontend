@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-09-13] Admin Logout and User Search
+
+- Menambahkan tombol Logout langsung di dashboard backoffice.
+- Menambahkan pencarian user berdasarkan nama, email, role, atau status subscription.
+- Empty state membedakan user tidak ada dengan hasil pencarian yang tidak cocok.
+- Validation: `npm run lint`, `npx tsc --noEmit`, dan `git diff --check` passed.
+
 ## [2026-09-13] Tab-Isolated Auth and Admin Dashboard Polish
 
 - Active authentication state now lives in each tab's `sessionStorage`; refresh, hydrate, and logout no longer clear or replace another tab's account.

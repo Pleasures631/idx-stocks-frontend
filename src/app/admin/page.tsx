@@ -7,8 +7,11 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { adminService, type AdminAuditEntry, type AdminRole, type AdminUser, type SubscriptionStatus } from "@/services/users"
 import { cn } from "@/lib/utils"
-import { AlertCircle, CheckCircle2, Clock3, CreditCard, Inbox, RefreshCw, Shield, Users } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { AlertCircle, CheckCircle2, Clock3, CreditCard, Inbox, LogOut, RefreshCw, Search, Shield, Users } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { useAuthStore } from "@/stores/auth-store"
 
 function formatDate(value: string | null | undefined) {
   if (!value) return "—"
@@ -40,12 +43,15 @@ function StatCard({ label, value, icon: Icon, detail }: { label: string; value: 
 }
 
 export default function AdminPage() {
+  const router = useRouter()
+  const logout = useAuthStore((state) => state.logout)
   const [users, setUsers] = useState<AdminUser[]>([])
   const [audit, setAudit] = useState<AdminAuditEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [auditError, setAuditError] = useState<string | null>(null)
   const [feedback, setFeedback] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
   const [busyKey, setBusyKey] = useState<string | null>(null)
 
   const load = useCallback(async () => {
@@ -57,6 +63,12 @@ export default function AdminPage() {
   }, [])
 
   useEffect(() => { void load() }, [load])
+
+  const visibleUsers = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase()
+    if (!query) return users
+    return users.filter((user) => [user.name, user.email, user.role, user.subscription_status].some((value) => value.toLowerCase().includes(query)))
+  }, [searchQuery, users])
 
   const summary = useMemo(() => ({
     total: users.length,
@@ -86,7 +98,10 @@ export default function AdminPage() {
     <div className="mx-auto max-w-[1500px] space-y-8 pb-8">
       <header className="flex flex-col justify-between gap-5 border-b pb-6 sm:flex-row sm:items-end">
         <div><p className="text-sm font-semibold uppercase tracking-wider text-primary">Backoffice</p><h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Admin overview</h1><p className="mt-2 max-w-2xl text-sm text-muted-foreground">Manage access, subscriptions, and administrative activity from one place.</p></div>
-        <Button variant="outline" onClick={() => void load()} disabled={loading} aria-label="Refresh admin data"><RefreshCw className={cn("mr-2 h-4 w-4", loading && "animate-spin")} />Refresh</Button>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={() => void load()} disabled={loading} aria-label="Refresh admin data"><RefreshCw className={cn("mr-2 h-4 w-4", loading && "animate-spin")} />Refresh</Button>
+          <Button variant="ghost" onClick={() => { logout(); router.replace("/login") }} aria-label="Logout admin"><LogOut className="mr-2 h-4 w-4" />Logout</Button>
+        </div>
       </header>
 
       {error && <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive"><AlertCircle className="mt-0.5 h-4 w-4 shrink-0" /><div><p className="font-medium">Unable to load admin data</p><p className="mt-1">{error}</p></div></div>}
@@ -95,9 +110,9 @@ export default function AdminPage() {
       <section aria-label="User summary" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"><StatCard label="Total users" value={summary.total} icon={Users} detail="Registered accounts" /><StatCard label="Active subscriptions" value={summary.active} icon={CreditCard} detail="Currently active" /><StatCard label="Expired subscriptions" value={summary.expired} icon={Clock3} detail="Need attention" /><StatCard label="Administrators" value={summary.admins} icon={Shield} detail="Backoffice access" /></section>
 
       <Card>
-        <CardHeader className="gap-2 border-b"><CardTitle>Users</CardTitle><CardDescription>Review account access and manage subscription status. Changes are authorized by the backend.</CardDescription></CardHeader>
+        <CardHeader className="gap-4 border-b sm:flex-row sm:items-center sm:justify-between"><div><CardTitle>Users</CardTitle><CardDescription>Review account access and manage subscription status. Changes are authorized by the backend.</CardDescription></div><div className="relative w-full sm:max-w-xs"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Search name, email, role..." aria-label="Search users" className="pl-9" /></div></CardHeader>
         <CardContent className="p-0">
-          {loading ? <div className="space-y-3 p-6" aria-label="Loading users"><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" /></div> : users.length === 0 ? <div className="flex flex-col items-center justify-center px-6 py-14 text-center"><Inbox className="mb-3 h-9 w-9 text-muted-foreground/60" /><p className="font-medium">No users found</p><p className="mt-1 text-sm text-muted-foreground">There are no accounts to display yet.</p></div> : <div className="overflow-x-auto"><Table className="min-w-[1080px]"><TableHeader><TableRow className="bg-muted/30"><TableHead className="pl-6">User</TableHead><TableHead>Role</TableHead><TableHead>Registered</TableHead><TableHead>Status</TableHead><TableHead>Start date</TableHead><TableHead>Expiry date</TableHead><TableHead className="pr-6">Actions</TableHead></TableRow></TableHeader><TableBody>{users.map((user) => { const roleBusy = busyKey === `role-${user.id}`; return <TableRow key={user.id}>
+          {loading ? <div className="space-y-3 p-6" aria-label="Loading users"><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" /></div> : visibleUsers.length === 0 ? <div className="flex flex-col items-center justify-center px-6 py-14 text-center"><Inbox className="mb-3 h-9 w-9 text-muted-foreground/60" /><p className="font-medium">{searchQuery ? "No matching users" : "No users found"}</p><p className="mt-1 text-sm text-muted-foreground">{searchQuery ? "Try another name, email, role, or status." : "There are no accounts to display yet."}</p></div> : <div className="overflow-x-auto"><Table className="min-w-[1080px]"><TableHeader><TableRow className="bg-muted/30"><TableHead className="pl-6">User</TableHead><TableHead>Role</TableHead><TableHead>Registered</TableHead><TableHead>Status</TableHead><TableHead>Start date</TableHead><TableHead>Expiry date</TableHead><TableHead className="pr-6">Actions</TableHead></TableRow></TableHeader><TableBody>{visibleUsers.map((user) => { const roleBusy = busyKey === `role-${user.id}`; return <TableRow key={user.id}>
             <TableCell className="pl-6"><div className="font-medium">{user.name}</div><div className="mt-0.5 text-xs text-muted-foreground">{user.email}</div></TableCell>
             <TableCell><select aria-label={`Role for ${user.name}`} className="rounded-md border bg-background px-2 py-1.5 text-xs capitalize outline-none focus:ring-2 focus:ring-ring" value={user.role} disabled={roleBusy || busyKey !== null} onChange={(event) => void runRoleChange(user, event.target.value as AdminRole)}><option value="user">user</option><option value="admin">admin</option></select></TableCell>
             <TableCell className="whitespace-nowrap text-sm text-muted-foreground">{formatDate(user.registration_date)}</TableCell><TableCell><Badge variant={statusVariant(user.subscription_status)} className="capitalize">{user.subscription_status}</Badge></TableCell><TableCell className="whitespace-nowrap text-sm text-muted-foreground">{formatDate(user.subscription_start_date)}</TableCell><TableCell className="whitespace-nowrap text-sm text-muted-foreground">{formatDate(user.subscription_expiry_date)}</TableCell>
