@@ -50,7 +50,6 @@ function StatItem({ label, value, tone, detail }: { label: string; value: string
 
 function FlowTable({ title, rows, side, profiles }: { title: string; rows: AnalyzeBrokerFlow[]; side: "buy" | "sell"; profiles: BrokerBehaviorProfile[] }) {
   const isBuy = side === "buy"
-  const priceLabel = isBuy ? "Avg Buy" : "Avg Sell"
   const profileByCode = new Map(profiles.map((profile) => [profile.broker_code, profile]))
   return (
     <div className="space-y-2">
@@ -61,15 +60,15 @@ function FlowTable({ title, rows, side, profiles }: { title: string; rows: Analy
             <TableRow>
               <TableHead>Broker</TableHead>
               <TableHead className="text-right">Net</TableHead>
-              {isBuy && <TableHead className="text-right">B LOT</TableHead>}
-              {isBuy && <TableHead className="text-right">B FREQ</TableHead>}
-              <TableHead className="text-right">{isBuy ? "B AVG" : priceLabel}</TableHead>
-              {isBuy && <TableHead className="text-right">B VAL</TableHead>}
+              <TableHead className="text-right">{isBuy ? "B LOT" : "S LOT"}</TableHead>
+              <TableHead className="text-right">{isBuy ? "B FREQ" : "S FREQ"}</TableHead>
+              <TableHead className="text-right">{isBuy ? "B AVG" : "S AVG"}</TableHead>
+              <TableHead className="text-right">{isBuy ? "B VAL" : "S VAL"}</TableHead>
               <TableHead className="text-right">Active Days</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {rows.length === 0 ? <TableRow><TableCell colSpan={isBuy ? 7 : 4} className="py-6 text-center text-sm text-muted-foreground">Tidak ada data</TableCell></TableRow> : rows.slice(0, 3).map((row) => (
+            {rows.length === 0 ? <TableRow><TableCell colSpan={7} className="py-6 text-center text-sm text-muted-foreground">Tidak ada data</TableCell></TableRow> : rows.slice(0, 3).map((row) => (
               <TableRow key={row.broker_code}>
                 <TableCell>
                   <div className="flex flex-wrap items-center gap-1.5">
@@ -83,10 +82,11 @@ function FlowTable({ title, rows, side, profiles }: { title: string; rows: Analy
                   <div className="text-xs text-muted-foreground">{row.broker_group || row.broker_type}</div>
                 </TableCell>
                 <TableCell className={`text-right font-medium ${flowTone(row.net_value)}`}>{row.formatted_net_value}</TableCell>
-                {isBuy && <TableCell className="text-right">{formatBigNumber(row.buy_lot)}</TableCell>}
+                <TableCell className="text-right">{formatBigNumber(isBuy ? row.buy_lot : row.sell_lot)}</TableCell>
+                {!isBuy && <TableCell className="text-right">{row.sell_frequency == null ? "—" : row.sell_frequency.toLocaleString("id-ID")}</TableCell>}
                 {isBuy && <TableCell className="text-right">{row.buy_frequency == null ? "—" : row.buy_frequency.toLocaleString("id-ID")}</TableCell>}
                 <TableCell className="text-right">{(isBuy ? row.buy_avg_price : row.sell_avg_price) > 0 ? formatIDR(isBuy ? row.buy_avg_price : row.sell_avg_price) : "—"}</TableCell>
-                {isBuy && <TableCell className="text-right">Rp{formatBigNumber(row.buy_value)}</TableCell>}
+                <TableCell className="text-right">Rp{formatBigNumber(isBuy ? row.buy_value : row.sell_value)}</TableCell>
                 <TableCell className="text-right">{row.active_days}</TableCell>
               </TableRow>
             ))}

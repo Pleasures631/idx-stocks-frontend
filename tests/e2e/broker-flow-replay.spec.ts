@@ -129,6 +129,10 @@ test("replays broker flow indicators on a short 7-session window", async ({ page
   await replayButton.click()
 
   await expect(page.getByText("2026-05-11", { exact: true })).toBeVisible()
+  await expect(page.getByText("S LOT", { exact: true })).toBeVisible()
+  await expect(page.getByText("S FREQ", { exact: true })).toBeVisible()
+  await expect(page.getByText("S AVG", { exact: true })).toBeVisible()
+  await expect(page.getByText("S VAL", { exact: true })).toBeVisible()
   await expect(page.getByText("2026-05-25", { exact: true })).toBeVisible()
   await expect(page.getByText("2026-06-02", { exact: true })).toBeVisible()
   await firstSnapshotDate.fill("2026-06-01")

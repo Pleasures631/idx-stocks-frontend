@@ -197,6 +197,8 @@ export interface AnalyzeBrokerFlow {
   net_lot: number
   /** Total BUY transaction frequency reported by Exodus for the analysis window. */
   buy_frequency?: number
+  /** Total SELL transaction frequency reported by Exodus for the analysis window. */
+  sell_frequency?: number
   buy_avg_price: number
   sell_avg_price: number
   active_days: number
