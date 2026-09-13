@@ -21,17 +21,38 @@ export interface WyckoffPhaseGroup {
   planets: WyckoffPlanet[]
 }
 
+export type WyckoffDataMode = "production" | "preview"
+export type WyckoffMarketStatus = "realtime" | "delayed" | "EOD" | "unknown"
+
+export interface WyckoffFreshness {
+  observed_date: string | null
+  updated_at: string | null
+  source: string
+  market_status: WyckoffMarketStatus
+  is_stale: boolean
+  stale_after_hours: number | null
+}
+
 export interface WyckoffOrbitData {
   as_of: string
   source: "mock" | "api"
+  freshness: WyckoffFreshness
   phases: WyckoffPhaseGroup[]
 }
 
-// Adapter boundary: replace this fallback with the eventual Wyckoff endpoint
-// without changing the orbit component or its selection/detail behavior.
+// Preview data is an explicit adapter, never a production fallback. The
+// production adapter must be implemented when the backend contract exists.
 const mockWyckoffOrbitData: WyckoffOrbitData = {
   as_of: "2026-09-11",
   source: "mock",
+  freshness: {
+    observed_date: "2026-09-11",
+    updated_at: "2026-09-11T00:00:00+07:00",
+    source: "Frontend preview fixture",
+    market_status: "EOD",
+    is_stale: true,
+    stale_after_hours: 24,
+  },
   phases: [
     {
       key: "accumulation",
@@ -77,8 +98,18 @@ const mockWyckoffOrbitData: WyckoffOrbitData = {
   ],
 }
 
+export class WyckoffProductionUnavailableError extends Error {
+  constructor() {
+    super("Wyckoff production data is not configured; preview data was not used.")
+    this.name = "WyckoffProductionUnavailableError"
+  }
+}
+
 export const wyckoffService = {
-  async getOrbit(): Promise<WyckoffOrbitData> {
+  async getOrbit(mode: WyckoffDataMode = "preview"): Promise<WyckoffOrbitData> {
+    if (mode === "production") {
+      throw new WyckoffProductionUnavailableError()
+    }
     return Promise.resolve(mockWyckoffOrbitData)
   },
 }

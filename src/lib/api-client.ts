@@ -4,6 +4,7 @@ import { useAuthStore } from "@/stores/auth-store"
 declare module "axios" {
   export interface AxiosRequestConfig {
     skipLoading?: boolean
+    skipAuthRefresh?: boolean
   }
 }
 
@@ -55,7 +56,7 @@ apiClient.interceptors.response.use(
       }
     }
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest.skipAuthRefresh && !originalRequest._retry) {
       originalRequest._retry = true
 
       const refreshToken = useAuthStore.getState().refreshToken

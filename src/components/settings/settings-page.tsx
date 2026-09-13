@@ -4,15 +4,23 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { useAuthStore } from "@/stores/auth-store"
+import apiClient from "@/lib/api-client"
 import { useTheme } from "next-themes"
 import { useRouter } from "next/navigation"
 import { LogOut, Moon, Sun, User, Shield } from "lucide-react"
+import { useEffect, useState } from "react"
 
 export function SettingsPage() {
   const { user, logout } = useAuthStore()
   const { theme, setTheme } = useTheme()
   const router = useRouter()
+  const [apiStatus, setApiStatus] = useState<"checking" | "connected" | "unavailable">("checking")
 
+  useEffect(() => {
+    apiClient.get("/health", { skipAuthRefresh: true, skipLoading: true })
+      .then(() => setApiStatus("connected"))
+      .catch(() => setApiStatus("unavailable"))
+  }, [])
   const handleLogout = () => {
     logout()
     router.push("/login")
@@ -104,7 +112,7 @@ export function SettingsPage() {
                 {process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}
               </p>
             </div>
-            <div className="h-2 w-2 rounded-full bg-emerald-500" title="Connected" />
+            <div className={`h-2 w-2 rounded-full ${apiStatus === "connected" ? "bg-emerald-500" : apiStatus === "unavailable" ? "bg-red-500" : "bg-amber-500"}`} title={apiStatus === "connected" ? "Connected" : apiStatus === "unavailable" ? "Unavailable" : "Checking"} />
           </div>
           <Separator />
           <div className="flex items-center justify-between">

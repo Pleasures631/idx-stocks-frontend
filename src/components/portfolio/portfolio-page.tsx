@@ -92,6 +92,12 @@ export function PortfolioPage() {
   }, [loadHoldings])
 
   const totalInvestment = holdings.reduce((sum, h) => sum + h.lot * 100 * h.avg_price, 0)
+  const totalCurrentValue = holdings.reduce((sum, h) => {
+    const currentPrice = priceByTicker.get(h.ticker)?.price ?? h.avg_price
+    return sum + h.lot * 100 * currentPrice
+  }, 0)
+  const unrealizedPL = totalCurrentValue - totalInvestment
+  const unrealizedPLPct = totalInvestment > 0 ? (unrealizedPL / totalInvestment) * 100 : null
 
   const brokerAllocation = holdings.reduce(
     (acc, h) => {
@@ -153,8 +159,8 @@ export function PortfolioPage() {
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{formatIDR(totalInvestment * 1.05)}</div>
-                <p className="text-xs text-emerald-500">+5.0% (estimated)</p>
+                <div className="text-2xl font-bold">{formatIDR(totalCurrentValue)}</div>
+                <p className="text-xs text-muted-foreground">Based on latest available price</p>
               </CardContent>
             </Card>
 
@@ -164,10 +170,12 @@ export function PortfolioPage() {
                 <TrendingUp className="h-4 w-4 text-emerald-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-emerald-500">
-                  {formatIDR(totalInvestment * 0.05)}
+                <div className={`text-2xl font-bold ${unrealizedPL >= 0 ? "text-emerald-500" : "text-red-500"}`}>
+                  {formatIDR(unrealizedPL)}
                 </div>
-                <p className="text-xs text-emerald-500">{formatPercent(5)}</p>
+                <p className={`text-xs ${unrealizedPL >= 0 ? "text-emerald-500" : "text-red-500"}`}>
+                  {unrealizedPLPct === null ? "—" : formatPercent(unrealizedPLPct)}
+                </p>
               </CardContent>
             </Card>
 

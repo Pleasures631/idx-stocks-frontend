@@ -1,12 +1,14 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { Activity, ArrowUpRight, Circle, Orbit, Radar, Sparkles, Target, Waves } from "lucide-react"
+import { Activity, AlertTriangle, ArrowUpRight, Circle, Orbit, Radar, RefreshCw, Sparkles, Target, Waves } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 import { formatIDR } from "@/lib/utils"
-import { wyckoffService, type WyckoffOrbitData, type WyckoffPhase, type WyckoffPlanet } from "@/services/wyckoff"
+import { wyckoffService, type WyckoffDataMode, type WyckoffOrbitData, type WyckoffPhase, type WyckoffPlanet } from "@/services/wyckoff"
 
 const phaseStyles: Record<WyckoffPhase, { accent: string; glow: string; badge: string; dot: string }> = {
   accumulation: { accent: "text-cyan-200", glow: "shadow-cyan-500/20", badge: "border-cyan-300/30 bg-cyan-300/10 text-cyan-100", dot: "bg-cyan-300" },
@@ -46,7 +48,7 @@ function Planet({ planet, selected, onSelect }: { planet: WyckoffPlanet; selecte
   )
 }
 
-function PlanetDetail({ planet }: { planet: WyckoffPlanet | null }) {
+function PlanetDetail({ planet, preview }: { planet: WyckoffPlanet | null; preview: boolean }) {
   if (!planet) {
     return <div className="flex min-h-[260px] flex-col items-center justify-center rounded-2xl border border-dashed border-white/15 bg-white/[0.03] p-6 text-center text-sm text-slate-400"><Orbit className="mb-3 h-8 w-8 text-cyan-200/70" /><p>Pilih planet untuk membaca detail sinyal.</p></div>
   }
@@ -54,9 +56,10 @@ function PlanetDetail({ planet }: { planet: WyckoffPlanet | null }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-5 shadow-2xl shadow-cyan-950/20">
       <div className="flex items-start justify-between gap-3">
-        <div><div className="flex items-center gap-2"><span className="text-2xl font-bold tracking-tight text-white">{planet.ticker}</span><Badge className={style.badge}>{planet.signal}</Badge></div><p className="mt-1 text-sm text-slate-400">{planet.name}</p></div>
+        <div><div className="flex items-center gap-2"><span className="text-2xl font-bold tracking-tight text-white">{planet.ticker}</span><Badge className={style.badge}>{preview ? "Preview signal" : planet.signal}</Badge></div><p className="mt-1 text-sm text-slate-400">{planet.name}</p></div>
         <ArrowUpRight className={`h-5 w-5 ${style.accent}`} />
       </div>
+      {preview && <p className="mt-4 rounded-lg border border-amber-300/20 bg-amber-300/10 p-3 text-xs leading-5 text-amber-100">Data ilustrasi saja — bukan data live dan bukan rekomendasi trading.</p>}
       <div className="mt-6 grid grid-cols-2 gap-3">
         <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3"><p className="text-xs text-slate-500">Harga snapshot</p><p className="mt-1 text-lg font-semibold text-white">{formatIDR(planet.price)}</p></div>
         <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3"><p className="text-xs text-slate-500">Phase score</p><p className="mt-1 text-lg font-semibold text-white">{planet.score}<span className="text-xs text-slate-500">/100</span></p></div>
@@ -69,30 +72,51 @@ function PlanetDetail({ planet }: { planet: WyckoffPlanet | null }) {
 }
 
 export function WyckoffOrbitPage() {
+  // The local fixture is available only as visibly labelled preview data.
+  // Set NEXT_PUBLIC_WYCKOFF_DATA_MODE=production to fail closed until the
+  // production endpoint contract is implemented; it never falls back.
+  const dataMode: WyckoffDataMode = process.env.NEXT_PUBLIC_WYCKOFF_DATA_MODE === "production" ? "production" : "preview"
   const [data, setData] = useState<WyckoffOrbitData | null>(null)
   const [selected, setSelected] = useState<WyckoffPlanet | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
     let active = true
-    wyckoffService.getOrbit().then((result) => {
+    setLoading(true)
+    setError(null)
+    wyckoffService.getOrbit(dataMode).then((result) => {
       if (active) {
         setData(result)
         setSelected(result.phases[0]?.planets[0] ?? null)
       }
+    }).catch((cause: unknown) => {
+      if (!active) return
+      setData(null)
+      setSelected(null)
+      setError(cause instanceof Error ? cause.message : "Wyckoff data belum dapat dimuat. Periksa koneksi, lalu coba lagi.")
+    }).finally(() => {
+      if (active) setLoading(false)
     })
     return () => { active = false }
-  }, [])
+  }, [dataMode, reloadKey])
 
   const planets = useMemo(() => data?.phases.flatMap((phase) => phase.planets) ?? [], [data])
+  const preview = data?.source === "mock"
 
-  if (!data) return <div className="mx-auto max-w-7xl space-y-6"><div className="h-10 w-64 animate-pulse rounded-lg bg-muted" /><div className="aspect-square max-w-[760px] animate-pulse rounded-3xl bg-muted/50" /></div>
+  if (loading) return <div className="mx-auto max-w-7xl space-y-6" aria-busy="true" aria-label="Memuat Wyckoff"><p className="text-sm text-muted-foreground" role="status">Memuat data Wyckoff...</p><Skeleton className="h-10 w-64" /><Skeleton className="aspect-square max-w-[760px] rounded-3xl" /></div>
+  if (error) return <div className="mx-auto flex min-h-[360px] max-w-2xl flex-col items-center justify-center gap-4 text-center" role="alert"><AlertTriangle className="h-10 w-10 text-destructive" /><div><h1 className="text-lg font-semibold">Wyckoff data tidak tersedia</h1><p className="mt-2 text-sm text-muted-foreground">{error}</p></div><Button variant="outline" onClick={() => setReloadKey((key) => key + 1)}><RefreshCw className="mr-2 h-4 w-4" />Coba lagi</Button></div>
+  if (!data || planets.length === 0) return <div className="mx-auto flex min-h-[360px] max-w-2xl flex-col items-center justify-center gap-3 text-center" role="status"><Orbit className="h-10 w-10 text-muted-foreground" /><h1 className="text-lg font-semibold">Belum ada data Wyckoff</h1><p className="text-sm text-muted-foreground">Belum ada fase atau saham yang dapat ditampilkan untuk sumber data ini.</p><Button variant="outline" onClick={() => setReloadKey((key) => key + 1)}><RefreshCw className="mr-2 h-4 w-4" />Muat ulang</Button></div>
 
   return (
     <div className="mx-auto max-w-[1480px] space-y-6 pb-8 text-slate-100">
       <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div><div className="mb-2 flex items-center gap-2 text-sm font-medium text-cyan-200"><Orbit className="h-4 w-4" /> Wyckoff intelligence layer</div><h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">Market Cycle Orbit</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">Peta fase saham berbasis struktur harga dan flow. Klik planet untuk membaca sinyal singkatnya.</p></div>
-        <div className="flex items-center gap-2"><Badge className="border-cyan-300/20 bg-cyan-300/10 text-cyan-100">{data.source === "mock" ? "Preview adapter" : "Live data"}</Badge><span className="text-xs text-slate-500">As of {data.as_of}</span></div>
+        <div className="flex flex-col items-start gap-2 sm:items-end"><div className="flex flex-wrap items-center justify-end gap-2"><Badge className={preview ? "border-amber-300/40 bg-amber-300/15 text-amber-100" : "border-emerald-300/30 bg-emerald-300/10 text-emerald-100"}>{preview ? "PREVIEW — NOT LIVE" : "LIVE / API"}</Badge><Badge variant="outline">{data.freshness.market_status === "unknown" ? "Status unknown" : data.freshness.market_status}</Badge></div><div className="text-right text-xs text-slate-500"><p>Observed {data.freshness.observed_date ?? data.as_of} · Updated {data.freshness.updated_at ?? "unknown"}</p><p>Source: {data.freshness.source}</p></div></div>
       </header>
+      {data.freshness.is_stale && <div className="flex items-start gap-3 rounded-xl border border-amber-300/30 bg-amber-300/10 p-4 text-sm text-amber-100" role="status"><AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" /><div><p className="font-semibold">Data mungkin sudah stale</p><p className="mt-1 text-xs leading-5 text-amber-100/80">Snapshot terakhir {data.freshness.observed_date ?? "tidak diketahui"}. Jangan gunakan sebagai kondisi pasar saat ini.</p></div></div>}
+      {preview && <div className="rounded-xl border border-amber-300/30 bg-amber-300/10 p-4 text-sm text-amber-100" role="note"><p className="font-semibold">Mode preview aktif</p><p className="mt-1 text-xs leading-5 text-amber-100/80">Semua planet, harga, skor, dan sinyal di halaman ini berasal dari fixture frontend. Ini bukan data live atau rekomendasi.</p></div>}
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_360px]">
         <Card className="overflow-hidden border-cyan-200/10 bg-[#050b1d] shadow-2xl shadow-cyan-950/20">
@@ -114,7 +138,7 @@ export function WyckoffOrbitPage() {
           </CardContent>
         </Card>
 
-        <aside className="space-y-4"><PlanetDetail planet={selected} /><Card className="border-white/10 bg-slate-950/40"><CardHeader className="pb-3"><CardTitle className="flex items-center gap-2 text-base text-white"><Sparkles className="h-4 w-4 text-cyan-200" /> Cara membaca orbit</CardTitle></CardHeader><CardContent className="space-y-3 text-xs leading-5 text-slate-400"><p><span className="font-semibold text-cyan-100">Accumulation</span> dan <span className="font-semibold text-emerald-100">Markup</span> menunjukkan demand yang mulai atau sedang memimpin.</p><p><span className="font-semibold text-amber-100">Distribution</span> dan <span className="font-semibold text-rose-100">Markdown</span> menunjukkan supply dan struktur yang melemah.</p><div className="flex items-center gap-2 border-t border-white/10 pt-3"><Activity className="h-4 w-4 text-slate-500" /> Score dan confidence adalah ranking indikatif, bukan prediksi profit.</div></CardContent></Card></aside>
+        <aside className="space-y-4"><PlanetDetail planet={selected} preview={preview} /><Card className="border-white/10 bg-slate-950/40"><CardHeader className="pb-3"><CardTitle className="flex items-center gap-2 text-base text-white"><Sparkles className="h-4 w-4 text-cyan-200" /> Cara membaca orbit</CardTitle></CardHeader><CardContent className="space-y-3 text-xs leading-5 text-slate-400"><p><span className="font-semibold text-cyan-100">Accumulation</span> dan <span className="font-semibold text-emerald-100">Markup</span> menunjukkan demand yang mulai atau sedang memimpin.</p><p><span className="font-semibold text-amber-100">Distribution</span> dan <span className="font-semibold text-rose-100">Markdown</span> menunjukkan supply dan struktur yang melemah.</p><div className="flex items-center gap-2 border-t border-white/10 pt-3"><Activity className="h-4 w-4 text-slate-500" /> Score dan confidence adalah ranking indikatif, bukan prediksi profit.</div></CardContent></Card></aside>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{data.phases.map((phase) => { const style = phaseStyles[phase.key]; return <Card key={phase.key} className="border-white/10 bg-slate-950/30"><CardContent className="p-4"><div className="flex items-center justify-between"><div className="flex items-center gap-2"><span className={`h-2.5 w-2.5 rounded-full ${style.dot}`} /><span className={`text-sm font-semibold ${style.accent}`}>{phase.label}</span></div><Badge className={style.badge}>{phase.planets.length}</Badge></div><p className="mt-2 text-xs leading-5 text-slate-500">{phase.description}</p><div className="mt-3 flex items-center gap-1 text-[10px] text-slate-500"><Target className="h-3 w-3" /> {phase.planets.filter((planet) => planet.confidence >= 75).length} confidence tinggi</div></CardContent></Card> })}</div>

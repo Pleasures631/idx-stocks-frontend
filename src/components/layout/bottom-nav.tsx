@@ -3,10 +3,11 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { LayoutDashboard, TrendingUp, Briefcase, Star } from "lucide-react"
+import { LayoutDashboard, TrendingUp, Briefcase, Star, ListChecks } from "lucide-react"
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Picks", href: "/daily-picks", icon: ListChecks },
   { label: "Stocks", href: "/stocks", icon: TrendingUp },
   { label: "Portfolio", href: "/portfolio", icon: Briefcase },
   { label: "Watchlist", href: "/watchlist", icon: Star },
@@ -25,7 +26,7 @@ export function BottomNav() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex flex-col items-center gap-0.5 px-3 py-1 text-xs font-medium transition-colors",
+                "flex min-w-0 flex-col items-center gap-0.5 px-1 py-1 text-[10px] font-medium transition-colors sm:px-2 sm:text-xs",
                 isActive ? "text-foreground" : "text-muted-foreground"
               )}
             >

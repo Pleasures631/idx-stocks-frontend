@@ -54,12 +54,24 @@ function clearPersistedTokens() {
   }
 }
 
+function persistRefreshedTokens(accessToken: string, refreshToken: string) {
+  if (typeof window === "undefined") return
+  for (const storage of [localStorage, sessionStorage]) {
+    if (storage.getItem("refresh_token")) {
+      storage.setItem("access_token", accessToken)
+      storage.setItem("refresh_token", refreshToken)
+      return
+    }
+  }
+}
+
 interface AuthState {
   user: AuthUser | null
   accessToken: string | null
   refreshToken: string | null
   isAuthenticated: boolean
   isLoading: boolean
+  isHydrated: boolean
   setAuth: (user: AuthUser, accessToken: string, refreshToken: string, rememberMe?: boolean) => void
   setTokens: (accessToken: string, refreshToken: string) => void
   setUser: (user: AuthUser) => void
@@ -74,13 +86,15 @@ export const useAuthStore = create<AuthState>((set) => ({
   refreshToken: null,
   isAuthenticated: false,
   isLoading: false,
+  isHydrated: false,
 
   setAuth: (user, accessToken, refreshToken, rememberMe = false) => {
     persistTokens(user, accessToken, refreshToken, rememberMe)
-    set({ user, accessToken, refreshToken, isAuthenticated: true })
+    set({ user, accessToken, refreshToken, isAuthenticated: true, isHydrated: true })
   },
 
   setTokens: (accessToken, refreshToken) => {
+    persistRefreshedTokens(accessToken, refreshToken)
     set({ accessToken, refreshToken })
   },
 
@@ -105,7 +119,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   hydrate: () => {
     const { user, accessToken, refreshToken } = readPersistedTokens()
     if (accessToken && refreshToken && user) {
-      set({ user, accessToken, refreshToken, isAuthenticated: true })
+      set({ user, accessToken, refreshToken, isAuthenticated: true, isHydrated: true })
+      return
     }
+    set({ isHydrated: true })
   },
 }))

@@ -30,6 +30,7 @@ export const brokerFlowSweepVariants = [
   sameSign,
 }))
 
+
 function usage(commandName = "run-broker-flow-browser-sweep.mjs") {
   return `Usage: node scripts/${commandName} [options]
 
@@ -45,7 +46,7 @@ Options:
 
 function parseArgs(argv, { direction = "ACCUMULATION", commandName = "run-broker-flow-browser-sweep.mjs" } = {}) {
   const options = {
-    ticker: "CUAN",
+    ticker: "BRPT",
     start: "2026-05-01",
     end: "2026-09-12",
     asOf: "",

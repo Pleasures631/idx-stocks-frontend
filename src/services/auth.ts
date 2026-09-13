@@ -3,7 +3,7 @@ import type { LoginRequest, RegisterRequest, AuthResponse, AuthUser } from "@/ty
 
 export const authService = {
   async login(data: LoginRequest): Promise<AuthResponse> {
-    const response = await apiClient.post<AuthResponse>("/auth/login", data)
+    const response = await apiClient.post<AuthResponse>("/auth/login", data, { skipAuthRefresh: true })
     return response.data
   },
 

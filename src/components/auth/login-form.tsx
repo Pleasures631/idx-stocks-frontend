@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useAuthStore } from "@/stores/auth-store"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Loader2 } from "lucide-react"
 import { useState } from "react"
@@ -18,6 +18,7 @@ import { BrandMark } from "@/components/brand/brand-mark"
 export function LoginForm() {
   const { setAuth } = useAuthStore()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [error, setError] = useState<string>("")
   const [loading, setLoading] = useState(false)
 
@@ -32,7 +33,7 @@ export function LoginForm() {
     try {
       const result = await authService.login(data)
       setAuth(result.user, result.access_token, result.refresh_token, data.rememberMe)
-      router.push("/dashboard")
+      router.push(searchParams.get("next") || "/dashboard")
     } catch (requestError) {
       setError((requestError as { response?: { data?: { message?: string } } }).response?.data?.message || "Login failed")
     } finally {

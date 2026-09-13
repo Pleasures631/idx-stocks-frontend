@@ -7,8 +7,11 @@ import { AuthProvider } from "@/components/auth/auth-provider"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Indonesian Stock Dashboard",
+  title: "Yapping Saham",
   description: "Dashboard & Portfolio Tracker for Indonesian Stock Market",
+  icons: {
+    icon: "/img/yapping-saham-logo/logo-icon.svg",
+  },
 }
 
 export default function RootLayout({

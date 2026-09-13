@@ -11,6 +11,7 @@ import { formatPercent, formatBigNumber } from "@/lib/utils"
 import { TrendingUp, TrendingDown, Briefcase, BarChart3, ArrowUpRight } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
+import { TradingViewTickerTape } from "@/components/dashboard/tradingview-ticker-tape"
 import type { StockbitIHSGChartPoint, StockbitIHSGQuote } from "@/types"
 
 interface Mover {
@@ -85,6 +86,7 @@ export function DashboardPage() {
   const [chartRange, setChartRange] = useState<ChartRange>("1y")
   const [chartLoading, setChartLoading] = useState(true)
   const [movers, setMovers] = useState<{ gainers: Mover[]; losers: Mover[] }>({ gainers: [], losers: [] })
+  const [totalVolume, setTotalVolume] = useState<number | null>(null)
 
   useEffect(() => {
     let active = true
@@ -102,6 +104,7 @@ export function DashboardPage() {
         const gainers = rows.filter((s) => s.change > 0).sort((a, b) => b.change - a.change).slice(0, 5)
         const losers = rows.filter((s) => s.change < 0).sort((a, b) => a.change - b.change).slice(0, 5)
         setMovers({ gainers, losers })
+        setTotalVolume(list.reduce((sum, stock) => sum + (stock.volume || 0), 0))
       })
       .catch(() => {
         if (active) setMovers({ gainers: [], losers: [] })
@@ -134,6 +137,8 @@ export function DashboardPage() {
         <p className="text-muted-foreground">Market overview and portfolio summary</p>
       </div>
 
+      <TradingViewTickerTape />
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {loading ? (
           <>
@@ -164,8 +169,8 @@ export function DashboardPage() {
                 <BarChart3 className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{formatBigNumber(216000000000)}</div>
-                <p className="text-xs text-muted-foreground">Across all tickers</p>
+                <div className="text-2xl font-bold">{totalVolume === null ? "—" : formatBigNumber(totalVolume)}</div>
+                <p className="text-xs text-muted-foreground">Across all tickers · latest data</p>
               </CardContent>
             </Card>
 
@@ -175,9 +180,9 @@ export function DashboardPage() {
                 <TrendingUp className="h-4 w-4 text-emerald-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">CUAN</div>
+                <div className="text-2xl font-bold">{movers.gainers[0]?.ticker ?? "—"}</div>
                 <p className="text-xs text-emerald-500 flex items-center gap-1">
-                  <TrendingUp className="h-3 w-3" /> {formatPercent(5.56)} | Rp190
+                  {movers.gainers[0] ? <><TrendingUp className="h-3 w-3" /> {formatPercent(movers.gainers[0].change)} | Rp{movers.gainers[0].price.toLocaleString()}</> : "Data belum tersedia"}
                 </p>
               </CardContent>
             </Card>

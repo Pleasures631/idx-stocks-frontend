@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026-09-13] Hide Broker Backtest Navigation
+
+- Menghapus menu Broker Backtest dari sidebar desktop dan mobile drawer.
+- Route dan logic Broker Backtest tetap dipertahankan; perubahan hanya pada navigasi.
+- Validation: `npm run lint` passed.
+
+## [2026-09-13] Wyckoff Data Provenance and Resilience
+
+- Preview fixture data is explicitly labelled `PREVIEW — NOT LIVE`; production mode fails closed and never falls back to mock data.
+- Wyckoff now shows observed date, update time, source, EOD/realtime status, and stale warnings; preview signals are not presented as recommendations.
+- Added loading, empty, API error, and retry states, plus regression coverage for the preview metadata and safety labels.
+- Validation: `npm run lint` passed; `npx tsc --noEmit` passed; `npm run build` passed. Wyckoff Playwright run timed out while starting the configured dev server.
+
 ## [2026-09-13] Sector Card Visual Identity
 
 - Setiap sector sekarang memiliki ikon dan aksen warna berbeda berdasarkan klasifikasi IDX.

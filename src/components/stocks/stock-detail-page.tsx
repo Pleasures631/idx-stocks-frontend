@@ -69,12 +69,18 @@ function mergeWeightedAveragePrice(currentPrice: number, currentValue: number, n
 
 export function StockDetailPage({ ticker }: StockDetailPageProps) {
   const [detail, setDetail] = useState<TickerDetail | null>(null)
+  const [priceBrokerSummary, setPriceBrokerSummary] = useState<BrokerSummaryEntry[]>([])
+  const [brokerSummary, setBrokerSummary] = useState<BrokerSummaryEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [range, setRange] = useState<PriceChartRange>("1m")
+  const [priceFromTo, setPriceFromTo] = useState<{ from: string; to: string } | null>(null)
+  const [priceCustomFrom, setPriceCustomFrom] = useState("")
+  const [priceCustomTo, setPriceCustomTo] = useState("")
   const [rangeLoading, setRangeLoading] = useState(false)
   const [brokerDate, setBrokerDate] = useState<string>("")
   const [presetFromTo, setPresetFromTo] = useState<{ from: string; to: string } | null>(null)
   const [brokerFilterMode, setBrokerFilterMode] = useState<BrokerFilterMode>("latest")
+  const [showNetOnly, setShowNetOnly] = useState(true)
   const [customFrom, setCustomFrom] = useState("")
   const [customTo, setCustomTo] = useState("")
   const [selectedFlowGroups, setSelectedFlowGroups] = useState<string[]>([])
@@ -84,18 +90,25 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
   const [replayRoadmaps, setReplayRoadmaps] = useState<ReplayRoadmapSnapshot[]>([])
   const [analyzeLoading, setAnalyzeLoading] = useState(true)
   const didInitialLoad = useRef(false)
+  const presetFromToRef = useRef<{ from: string; to: string } | null>(null)
+
+  useEffect(() => {
+    presetFromToRef.current = presetFromTo
+  }, [presetFromTo])
 
   useEffect(() => {
     let active = true
     setDetailError(null)
     if (!didInitialLoad.current) setLoading(true)
     else setRangeLoading(true)
-    const params: TickerDetailParams = presetFromTo ?? { range }
+    const params: TickerDetailParams = priceFromTo ?? { range }
     stocksService
       .getTickerDetail(ticker.toUpperCase(), params)
       .then((d: TickerDetail) => {
         if (!active) return
         setDetail(d.price_chart.length > 0 ? d : null)
+        setPriceBrokerSummary(d.broker_summary)
+        if (!presetFromToRef.current && !priceFromTo) setBrokerSummary(d.broker_summary)
       })
       .catch(() => {
         if (active) {
@@ -113,7 +126,20 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
     return () => {
       active = false
     }
-  }, [ticker, range, presetFromTo, retry])
+  }, [ticker, range, priceFromTo, retry])
+
+  useEffect(() => {
+    if (!presetFromTo) return
+    let active = true
+    stocksService
+      .getTickerDetail(ticker.toUpperCase(), presetFromTo)
+      .then((d: TickerDetail) => {
+        if (active) setBrokerSummary(d.broker_summary)
+      })
+    return () => {
+      active = false
+    }
+  }, [ticker, presetFromTo, retry])
 
   useEffect(() => {
     let active = true
@@ -136,23 +162,23 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
   }, [ticker])
 
   const brokerDates = useMemo(
-    () => Array.from(new Set((detail?.broker_summary ?? []).map((b) => b.trade_date))).sort().reverse(),
-    [detail]
+    () => Array.from(new Set(brokerSummary.map((b) => b.trade_date))).sort().reverse(),
+    [brokerSummary]
   )
 
   const brokerByDate = useMemo(() => {
     const map = new Map<string, BrokerSummaryEntry[]>()
-    for (const row of detail?.broker_summary ?? []) {
+    for (const row of priceBrokerSummary) {
       const list = map.get(row.trade_date)
       if (list) list.push(row)
       else map.set(row.trade_date, [row])
     }
     return map
-  }, [detail])
+  }, [priceBrokerSummary])
 
   const flowByDate = useMemo(() => {
     const map = new Map<string, Record<string, number>>()
-    for (const row of detail?.broker_summary ?? []) {
+    for (const row of priceBrokerSummary) {
       const group = row.broker_group?.toUpperCase()
       if (!group) continue
       const values = map.get(row.trade_date) ?? {}
@@ -160,7 +186,7 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
       map.set(row.trade_date, values)
     }
     return map
-  }, [detail])
+  }, [priceBrokerSummary])
 
   const availableFlowGroups = useMemo(
     () => new Set(Array.from(flowByDate.values()).flatMap((values) => Object.keys(values))),
@@ -217,8 +243,9 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
     .slice(0, 8)
     .map((b) => ({ name: b.broker_name, buy: b.buy_volume, sell: b.sell_volume }))
   const activeBrokerDate = brokerDates.includes(brokerDate) ? brokerDate : brokerDates[0]
+  const getBrokerNetValue = (broker: BrokerSummaryEntry) => broker.buy_value - broker.sell_value
   const brokerRows = (() => {
-    const source = detail.broker_summary
+    const source = brokerSummary
     if (brokerFilterMode === "latest") {
       return source
         .filter((b) => b.trade_date === activeBrokerDate)
@@ -248,11 +275,15 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
     return Array.from(byBroker.values()).sort((a, b) => Math.abs(b.net_value) - Math.abs(a.net_value))
   })()
   const buyBrokerRows = brokerRows
-    .filter((broker) => broker.buy_volume > 0 || broker.buy_value > 0)
+    .filter((broker) => showNetOnly
+      ? getBrokerNetValue(broker) > 0
+      : broker.buy_volume > 0 || broker.buy_value > 0)
     .slice()
     .sort((a, b) => b.buy_value - a.buy_value)
   const sellBrokerRows = brokerRows
-    .filter((broker) => broker.sell_volume > 0 || broker.sell_value > 0)
+    .filter((broker) => showNetOnly
+      ? getBrokerNetValue(broker) < 0
+      : broker.sell_volume > 0 || broker.sell_value > 0)
     .slice()
     .sort((a, b) => b.sell_value - a.sell_value)
 
@@ -264,6 +295,8 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
   const applyPreset = (days: number) => {
     const to = new Date()
     const from = addDays(to, -(days - 1))
+    setCustomFrom("")
+    setCustomTo("")
     setPresetFromTo({ from: format(from, "yyyy-MM-dd"), to: format(to, "yyyy-MM-dd") })
     setBrokerFilterMode(days === 7 ? "7d" : days === 30 ? "30d" : "3m")
   }
@@ -274,8 +307,17 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
     setBrokerFilterMode("custom")
   }
 
+  const applyPriceCustomRange = () => {
+    if (!priceCustomFrom || !priceCustomTo || priceCustomFrom > priceCustomTo) return
+    setPriceFromTo({ from: priceCustomFrom, to: priceCustomTo })
+  }
+
   const selectLatestDate = (date: string) => {
     setBrokerDate(date)
+    setCustomFrom("")
+    setCustomTo("")
+    setPresetFromTo(null)
+    setBrokerSummary(priceBrokerSummary)
     setBrokerFilterMode("latest")
   }
 
@@ -329,16 +371,54 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
                   <Button
                     key={r.key}
                     size="sm"
-                    variant={!presetFromTo && range === r.key ? "default" : "outline"}
+                    variant={!priceFromTo && range === r.key ? "default" : "outline"}
                     onClick={() => {
                       setRange(r.key)
-                      setPresetFromTo(null)
+                      setPriceFromTo(null)
                     }}
                     disabled={rangeLoading}
                   >
                     {r.label}
                   </Button>
                 ))}
+              </div>
+              <div className="flex flex-col gap-2 rounded-lg border border-dashed border-border bg-muted/30 p-3 sm:flex-row sm:items-end">
+                <div className="mr-2 text-xs text-muted-foreground sm:pb-2">
+                  <p className="font-medium text-foreground">Custom chart range</p>
+                  <p>Filter tanggal khusus untuk Price Chart.</p>
+                </div>
+                <label className="relative min-w-0 flex-1 space-y-1 text-xs text-muted-foreground sm:max-w-[180px]">
+                  <span className="block">Start</span>
+                  <span className="relative flex h-9 items-center gap-2 rounded-md border border-input bg-background px-3 text-sm text-foreground">
+                    <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                    <span>{priceCustomFrom ? format(parseISO(priceCustomFrom), "dd MMM yyyy") : "Pilih tanggal"}</span>
+                    <input
+                      type="date"
+                      value={priceCustomFrom}
+                      onChange={(event) => setPriceCustomFrom(event.target.value)}
+                      className="absolute inset-0 z-10 h-full w-full cursor-pointer rounded-md border border-input bg-background px-3 text-sm text-foreground"
+                      aria-label="Price chart start date"
+                    />
+                  </span>
+                </label>
+                <label className="relative min-w-0 flex-1 space-y-1 text-xs text-muted-foreground sm:max-w-[180px]">
+                  <span className="block">End</span>
+                  <span className="relative flex h-9 items-center gap-2 rounded-md border border-input bg-background px-3 text-sm text-foreground">
+                    <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                    <span>{priceCustomTo ? format(parseISO(priceCustomTo), "dd MMM yyyy") : "Pilih tanggal"}</span>
+                    <input
+                      type="date"
+                      value={priceCustomTo}
+                      min={priceCustomFrom || undefined}
+                      onChange={(event) => setPriceCustomTo(event.target.value)}
+                      className="absolute inset-0 z-10 h-full w-full cursor-pointer rounded-md border border-input bg-background px-3 text-sm text-foreground"
+                      aria-label="Price chart end date"
+                    />
+                  </span>
+                </label>
+                <Button variant="outline" size="sm" onClick={applyPriceCustomRange} disabled={!priceCustomFrom || !priceCustomTo || priceCustomFrom > priceCustomTo}>
+                  Apply
+                </Button>
               </div>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-md border p-3">
                 <span className="text-xs font-medium text-muted-foreground">Flow:</span>
@@ -450,8 +530,12 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
 
         <TabsContent value="brokers">
           <Card>
-            <CardHeader>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <CardHeader className="space-y-4">
+              <div>
+                <CardTitle>Broker Summary</CardTitle>
+                <CardDescription>Brokers trading {detail.symbol}</CardDescription>
+              </div>
+              <div className="space-y-3">
                 <div className="flex flex-wrap items-center gap-1">
                   <Button
                     variant="outline"
@@ -469,7 +553,7 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
                         <ChevronDown className="h-4 w-4 opacity-50" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="max-h-[280px] overflow-y-auto">
+                    <DropdownMenuContent align="start">
                       <DropdownMenuItem onSelect={() => brokerDates[0] && selectLatestDate(brokerDates[0])}>
                         Latest
                       </DropdownMenuItem>
@@ -482,22 +566,6 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
                       <DropdownMenuItem onSelect={() => applyPreset(90)}>
                         Last 3 Months
                       </DropdownMenuItem>
-                      {brokerDates.length > 0 && (
-                        <>
-                          <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
-                            Go to date
-                          </div>
-                          {brokerDates.slice(0, 15).map((date) => (
-                            <DropdownMenuItem
-                              key={date}
-                              onSelect={() => selectLatestDate(date)}
-                              className={date === activeBrokerDate ? "bg-accent" : undefined}
-                            >
-                              {date}
-                            </DropdownMenuItem>
-                          ))}
-                        </>
-                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                   <Button
@@ -514,34 +582,57 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
                       {presetFromTo.from} – {presetFromTo.to}
                     </Badge>
                   )}
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={showNetOnly}
+                    onClick={() => setShowNetOnly((current) => !current)}
+                    className="ml-2 inline-flex items-center gap-2 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  >
+                    <span>Net Flow</span>
+                    <span className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${showNetOnly ? "bg-emerald-500" : "bg-muted-foreground/40"}`}>
+                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${showNetOnly ? "translate-x-4" : "translate-x-0.5"}`} />
+                    </span>
+                    <span className="sr-only">{showNetOnly ? "enabled" : "disabled"}</span>
+                  </button>
                 </div>
-                <div className="flex flex-wrap items-end gap-2">
-                  <label className="space-y-1 text-xs text-muted-foreground">
+                <div className="flex flex-col gap-2 rounded-lg border border-dashed border-border bg-muted/30 p-3 sm:flex-row sm:items-end">
+                  <div className="mr-2 text-xs text-muted-foreground sm:pb-2">
+                    <p className="font-medium text-foreground">Custom date range</p>
+                    <p>Pilih periode broker yang ingin dianalisis.</p>
+                  </div>
+                  <label className="relative min-w-0 flex-1 space-y-1 text-xs text-muted-foreground sm:max-w-[180px]">
                     <span className="block">Start</span>
-                    <input
-                      type="date"
-                      value={customFrom}
-                      onChange={(event) => setCustomFrom(event.target.value)}
-                      className="h-9 rounded-md border border-input bg-background px-2 text-sm text-foreground"
-                    />
+                    <span className="relative flex h-9 items-center gap-2 rounded-md border border-input bg-background px-3 text-sm text-foreground">
+                      <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                      <span>{customFrom ? format(parseISO(customFrom), "dd MMM yyyy") : "Pilih tanggal"}</span>
+                      <input
+                        type="date"
+                        value={customFrom}
+                        onChange={(event) => setCustomFrom(event.target.value)}
+                        className="absolute inset-0 z-10 h-full w-full cursor-pointer rounded-md border border-input bg-background px-3 text-sm text-foreground"
+                        aria-label="Start date"
+                      />
+                    </span>
                   </label>
-                  <label className="space-y-1 text-xs text-muted-foreground">
+                  <label className="relative min-w-0 flex-1 space-y-1 text-xs text-muted-foreground sm:max-w-[180px]">
                     <span className="block">End</span>
-                    <input
-                      type="date"
-                      value={customTo}
-                      min={customFrom || undefined}
-                      onChange={(event) => setCustomTo(event.target.value)}
-                      className="h-9 rounded-md border border-input bg-background px-2 text-sm text-foreground"
-                    />
+                    <span className="relative flex h-9 items-center gap-2 rounded-md border border-input bg-background px-3 text-sm text-foreground">
+                      <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                      <span>{customTo ? format(parseISO(customTo), "dd MMM yyyy") : "Pilih tanggal"}</span>
+                      <input
+                        type="date"
+                        value={customTo}
+                        min={customFrom || undefined}
+                        onChange={(event) => setCustomTo(event.target.value)}
+                        className="absolute inset-0 z-10 h-full w-full cursor-pointer rounded-md border border-input bg-background px-3 text-sm text-foreground"
+                        aria-label="End date"
+                      />
+                    </span>
                   </label>
                   <Button variant="outline" size="sm" onClick={applyCustomRange} disabled={!customFrom || !customTo || customFrom > customTo}>
                     Apply
                   </Button>
-                </div>
-                <div>
-                  <CardTitle>Broker Summary</CardTitle>
-                  <CardDescription>Brokers trading {detail.symbol}</CardDescription>
                 </div>
               </div>
             </CardHeader>

@@ -5,14 +5,37 @@ import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import { useAuthStore } from "@/stores/auth-store"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { MobileDrawer } from "./mobile-drawer"
+import { stocksService } from "@/services/stocks"
+import type { StockListItem } from "@/types"
 
 export function TopNav() {
   const { theme, setTheme } = useTheme()
   const { user, logout } = useAuthStore()
   const router = useRouter()
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [search, setSearch] = useState("")
+  const [stocks, setStocks] = useState<StockListItem[]>([])
+
+  useEffect(() => {
+    let active = true
+    stocksService.getStockList().then((list) => {
+      if (active) setStocks(list)
+    }).catch(() => {
+      if (active) setStocks([])
+    })
+    return () => {
+      active = false
+    }
+  }, [])
+
+  const suggestions = search.trim()
+    ? stocks.filter((stock) => {
+        const query = search.toLowerCase()
+        return stock.stock_code.toLowerCase().includes(query) || stock.stock_name.toLowerCase().includes(query)
+      }).slice(0, 8)
+    : []
 
   const handleLogout = () => {
     logout()
@@ -38,7 +61,27 @@ export function TopNav() {
               type="search"
               placeholder="Search stocks..."
               className="flex h-9 w-full rounded-md border border-input bg-muted/50 pl-8 pr-3 py-1 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
             />
+            {suggestions.length > 0 && (
+              <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-md border bg-popover shadow-md">
+                {suggestions.map((stock) => (
+                  <button
+                    key={stock.stock_code}
+                    type="button"
+                    className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-accent"
+                    onClick={() => {
+                      setSearch("")
+                      router.push(`/stocks/${stock.stock_code}`)
+                    }}
+                  >
+                    <span className="font-medium">{stock.stock_code}</span>
+                    <span className="ml-3 truncate text-xs text-muted-foreground">{stock.stock_name}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
