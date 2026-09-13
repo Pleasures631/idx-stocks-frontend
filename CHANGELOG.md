@@ -1,5 +1,19 @@
 # Changelog
 
+## [2026-09-13] Scalable Admin User List
+
+- Admin user search now uses debounced backend queries with explicit `q`, `limit`, and `offset` parameters instead of downloading and filtering every account in the browser.
+- Added paginated Load more behavior, loading/no-more/empty states, stale-request protection, and retryable user-list errors.
+- Summary cards now distinguish the backend total from page-visible subscription and administrator counts.
+- Added Playwright discovery coverage for server-side search and pagination.
+- Validation: `npm run lint`, `npx tsc --noEmit`, `npm run build`, Playwright discovery, and `git diff --check`.
+
+## [2026-09-13] Inactive Account Feature Gating
+
+- Hydrate subscription and access summaries from `/auth/me` while keeping inactive accounts logged in for basic dashboard use.
+- Added explicit premium gates and lock indicators for Broker Flow Analysis, Broker Flow Backtest, and Wyckoff, including direct-route locked states.
+- Admin users retain access regardless of subscription status; added Playwright coverage for inactive locks and admin access.
+
 ## [2026-09-13] Admin Logout and User Search
 
 - Menambahkan tombol Logout langsung di dashboard backoffice.

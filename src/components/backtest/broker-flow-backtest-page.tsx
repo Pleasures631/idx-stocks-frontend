@@ -14,6 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { formatIDR } from "@/lib/utils"
+import { LockedFeature, hasFeatureAccess } from "@/components/access/locked-feature"
+import { useAuthStore } from "@/stores/auth-store"
 import { brokerFlowBacktestSchema } from "@/lib/validators"
 import { brokerFlowBacktestService } from "@/services/broker-flow-backtest"
 import type {
@@ -56,6 +58,7 @@ function ResultSkeleton() {
 }
 
 export function BrokerFlowBacktestPage() {
+  const user = useAuthStore((state) => state.user)
   const today = format(new Date(), "yyyy-MM-dd")
   const [symbolInput, setSymbolInput] = useState("CUAN, BBCA, TLKM")
   const [startDate, setStartDate] = useState(format(subMonths(new Date(), 6), "yyyy-MM-dd"))
@@ -80,6 +83,8 @@ export function BrokerFlowBacktestPage() {
   const symbols = parseSymbols(symbolInput)
   const maxPage = data ? Math.max(1, Math.ceil(data.results.length / PAGE_SIZE)) : 1
   const visibleResults = data?.results.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE) ?? []
+
+  if (!hasFeatureAccess(user, "brokerFlowBacktest")) return <LockedFeature feature="brokerFlowBacktest" />
 
   const toggleHorizon = (horizon: BrokerFlowBacktestHorizon) => {
     setHorizons((current) => current.includes(horizon)

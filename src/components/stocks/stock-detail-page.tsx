@@ -17,8 +17,10 @@ import { stocksService, type TickerDetailParams } from "@/services/stocks"
 import type { ReplayRoadmapSnapshot, TickerDetail, PriceChartRange, StockAnalyze, BrokerSummaryEntry } from "@/types"
 import { formatPercent, formatBigNumber, formatIDR } from "@/lib/utils"
 import { brokerCodeClassName } from "@/lib/broker-display"
+import { LockedFeature, hasFeatureAccess } from "@/components/access/locked-feature"
+import { useAuthStore } from "@/stores/auth-store"
 import { addDays, format, parseISO } from "date-fns"
-import { ArrowLeft, TrendingUp, TrendingDown, ChevronLeft, ChevronRight, ChevronDown, CalendarDays } from "lucide-react"
+import { ArrowLeft, TrendingUp, TrendingDown, ChevronLeft, ChevronRight, ChevronDown, CalendarDays, LockKeyhole } from "lucide-react"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { useState, useEffect, useRef, useMemo } from "react"
@@ -68,6 +70,8 @@ function mergeWeightedAveragePrice(currentPrice: number, currentValue: number, n
 }
 
 export function StockDetailPage({ ticker }: StockDetailPageProps) {
+  const user = useAuthStore((state) => state.user)
+  const brokerFlowAccess = hasFeatureAccess(user, "brokerFlowAnalysis")
   const [detail, setDetail] = useState<TickerDetail | null>(null)
   const [priceBrokerSummary, setPriceBrokerSummary] = useState<BrokerSummaryEntry[]>([])
   const [brokerSummary, setBrokerSummary] = useState<BrokerSummaryEntry[]>([])
@@ -142,6 +146,7 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
   }, [ticker, presetFromTo, retry])
 
   useEffect(() => {
+    if (!brokerFlowAccess) { setAnalyzeLoading(false); return }
     let active = true
     setAnalyzeLoading(true)
     stocksService
@@ -159,7 +164,7 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
     return () => {
       active = false
     }
-  }, [ticker])
+  }, [ticker, brokerFlowAccess])
 
   const brokerDates = useMemo(
     () => Array.from(new Set(brokerSummary.map((b) => b.trade_date))).sort().reverse(),
@@ -355,7 +360,7 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
         <TabsList className="w-full sm:w-auto">
           <TabsTrigger value="chart" className="flex-1 sm:flex-none">Price Chart</TabsTrigger>
           <TabsTrigger value="brokers" className="flex-1 sm:flex-none">Broker Summary</TabsTrigger>
-          <TabsTrigger value="analyze" className="flex-1 sm:flex-none">Analisis Broker Flow</TabsTrigger>
+          <TabsTrigger value="analyze" disabled={!brokerFlowAccess} className="flex-1 sm:flex-none"><span className="inline-flex items-center gap-1">Analisis Broker Flow {!brokerFlowAccess && <LockKeyhole className="h-3 w-3 text-amber-500" />}</span></TabsTrigger>
           <TabsTrigger value="liquidity" className="flex-1 sm:flex-none">Liquidity</TabsTrigger>
         </TabsList>
 
@@ -733,7 +738,7 @@ export function StockDetailPage({ ticker }: StockDetailPageProps) {
         </TabsContent>
 
         <TabsContent value="analyze" forceMount className="data-[state=inactive]:hidden">
-          {analyzeLoading ? (
+          {!brokerFlowAccess ? <LockedFeature feature="brokerFlowAnalysis" /> : analyzeLoading ? (
             <Card>
               <CardHeader>
                 <Skeleton className="h-5 w-40" />

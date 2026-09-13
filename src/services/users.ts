@@ -63,9 +63,32 @@ export interface AdminAuditEntry {
   note?: string | null
 }
 
+export interface AdminUsersQuery {
+  q: string
+  limit: number
+  offset: number
+}
+
+export interface AdminUsersPagination {
+  limit: number
+  offset: number
+  total: number
+  has_more: boolean
+}
+
 export interface AdminUsersResponse {
+  users: AdminUser[]
+  pagination: AdminUsersPagination
+}
+
+type AdminUsersPayload = {
   users?: AdminUser[]
   data?: AdminUser[]
+  pagination?: Partial<AdminUsersPagination>
+  limit?: number
+  offset?: number
+  total?: number
+  has_more?: boolean
 }
 
 function unwrapList<T>(payload: T[] | { data?: T[]; users?: T[] }): T[] {
@@ -74,9 +97,22 @@ function unwrapList<T>(payload: T[] | { data?: T[]; users?: T[] }): T[] {
 }
 
 export const adminService = {
-  async getUsers(): Promise<AdminUser[]> {
-    const response = await apiClient.get<AdminUsersResponse | AdminUser[]>("/admin/users")
-    return unwrapList(response.data)
+  async getUsers({ q, limit, offset }: AdminUsersQuery): Promise<AdminUsersResponse> {
+    const response = await apiClient.get<AdminUsersPayload | AdminUser[]>("/admin/users", {
+      params: { q, limit, offset },
+    })
+    const payload = response.data
+    const users = unwrapList(payload)
+    const pagination = Array.isArray(payload) ? undefined : payload.pagination
+    return {
+      users,
+      pagination: {
+        limit: pagination?.limit ?? (!Array.isArray(payload) ? payload.limit : undefined) ?? limit,
+        offset: pagination?.offset ?? (!Array.isArray(payload) ? payload.offset : undefined) ?? offset,
+        total: pagination?.total ?? (!Array.isArray(payload) ? payload.total : undefined) ?? users.length,
+        has_more: pagination?.has_more ?? (!Array.isArray(payload) ? payload.has_more : undefined) ?? false,
+      },
+    }
   },
 
   async getAudit(): Promise<AdminAuditEntry[]> {

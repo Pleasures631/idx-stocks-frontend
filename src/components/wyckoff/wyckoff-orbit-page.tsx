@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatIDR } from "@/lib/utils"
+import { LockedFeature, hasFeatureAccess } from "@/components/access/locked-feature"
+import { useAuthStore } from "@/stores/auth-store"
 import { wyckoffService, type WyckoffDataMode, type WyckoffOrbitData, type WyckoffPhase, type WyckoffPlanet } from "@/services/wyckoff"
 
 const phaseStyles: Record<WyckoffPhase, { accent: string; glow: string; badge: string; dot: string }> = {
@@ -72,6 +74,7 @@ function PlanetDetail({ planet, preview }: { planet: WyckoffPlanet | null; previ
 }
 
 export function WyckoffOrbitPage() {
+  const user = useAuthStore((state) => state.user)
   // The local fixture is available only as visibly labelled preview data.
   // Set NEXT_PUBLIC_WYCKOFF_DATA_MODE=production to fail closed until the
   // production endpoint contract is implemented; it never falls back.
@@ -83,6 +86,7 @@ export function WyckoffOrbitPage() {
   const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
+    if (!hasFeatureAccess(user, "wyckoff")) { setLoading(false); return }
     let active = true
     setLoading(true)
     setError(null)
@@ -100,10 +104,12 @@ export function WyckoffOrbitPage() {
       if (active) setLoading(false)
     })
     return () => { active = false }
-  }, [dataMode, reloadKey])
+  }, [dataMode, reloadKey, user])
 
   const planets = useMemo(() => data?.phases.flatMap((phase) => phase.planets) ?? [], [data])
   const preview = data?.source === "mock"
+
+  if (!hasFeatureAccess(user, "wyckoff")) return <LockedFeature feature="wyckoff" />
 
   if (loading) return <div className="mx-auto max-w-7xl space-y-6" aria-busy="true" aria-label="Memuat Wyckoff"><p className="text-sm text-muted-foreground" role="status">Memuat data Wyckoff...</p><Skeleton className="h-10 w-64" /><Skeleton className="aspect-square max-w-[760px] rounded-3xl" /></div>
   if (error) return <div className="mx-auto flex min-h-[360px] max-w-2xl flex-col items-center justify-center gap-4 text-center" role="alert"><AlertTriangle className="h-10 w-10 text-destructive" /><div><h1 className="text-lg font-semibold">Wyckoff data tidak tersedia</h1><p className="mt-2 text-sm text-muted-foreground">{error}</p></div><Button variant="outline" onClick={() => setReloadKey((key) => key + 1)}><RefreshCw className="mr-2 h-4 w-4" />Coba lagi</Button></div>

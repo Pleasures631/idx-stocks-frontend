@@ -14,6 +14,7 @@ import {
   Layers3,
   Orbit,
   X,
+  LockKeyhole,
 } from "lucide-react"
 import {
   Sheet,
@@ -22,12 +23,15 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { BrandMark } from "@/components/brand/brand-mark"
+import { useAuthStore } from "@/stores/auth-store"
+import { hasFeatureAccess, type PremiumFeature } from "@/components/access/locked-feature"
 
-const navItems = [
+const navItems: { label: string; href: string; icon: typeof LayoutDashboard; feature?: PremiumFeature }[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Stocks", href: "/stocks", icon: TrendingUp },
   { label: "Sector", href: "/sectors", icon: Layers3 },
-  { label: "Wyckoff", href: "/wyckoff", icon: Orbit },
+  { label: "Wyckoff", href: "/wyckoff", icon: Orbit, feature: "wyckoff" },
+  { label: "Broker Flow Analysis", href: "/broker-flow-backtest", icon: TrendingUp, feature: "brokerFlowBacktest" },
   { label: "Daily 5 Picks", href: "/daily-picks", icon: ListChecks },
   { label: "Portfolio", href: "/portfolio", icon: Briefcase },
   { label: "Watchlist", href: "/watchlist", icon: Star },
@@ -42,6 +46,7 @@ interface MobileDrawerProps {
 
 export function MobileDrawer({ open, onOpenChange }: MobileDrawerProps) {
   const pathname = usePathname()
+  const user = useAuthStore((state) => state.user)
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -52,7 +57,10 @@ export function MobileDrawer({ open, onOpenChange }: MobileDrawerProps) {
         <nav className="flex-1 space-y-1 p-2">
           {navItems.map((item) => {
             const isActive = pathname.startsWith(item.href)
-            return (
+            const locked = item.feature && !hasFeatureAccess(user, item.feature)
+            return locked ? (
+              <div key={item.href} aria-disabled="true" title="Account inactive — contact Telegram/admin for activation" className="flex cursor-not-allowed items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground/60"><item.icon className="h-4 w-4 shrink-0" /><span className="flex-1">{item.label}</span><LockKeyhole className="h-3.5 w-3.5 text-amber-500" /></div>
+            ) : (
               <Link
                 key={item.href}
                 href={item.href}

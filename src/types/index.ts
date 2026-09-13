@@ -673,12 +673,34 @@ export interface BrokerFlowBacktestResponse {
 }
 
 // --- Auth Types ---
+export type SubscriptionStatus = "active" | "expired" | "inactive"
+
+export interface AuthSubscriptionSummary {
+  status: SubscriptionStatus
+  start_date?: string | null
+  expiry_date?: string | null
+}
+
+export interface AuthAccessSummary {
+  is_active?: boolean
+  active?: boolean
+  features?: Partial<Record<"brokerFlowAnalysis" | "brokerFlowBacktest" | "wyckoff", boolean>>
+}
+
 export interface AuthUser {
   id: number
   email: string
   name: string
   created_at: string
   role?: "user" | "admin"
+  subscription?: AuthSubscriptionSummary | null
+  access?: AuthAccessSummary | null
+}
+
+export interface AuthMeResponse {
+  user: AuthUser
+  subscription?: AuthSubscriptionSummary | null
+  access?: AuthAccessSummary | null
 }
 
 export interface LoginRequest {

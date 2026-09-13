@@ -1,5 +1,5 @@
 import apiClient from "@/lib/api-client"
-import type { LoginRequest, RegisterRequest, AuthResponse, AuthUser } from "@/types"
+import type { LoginRequest, RegisterRequest, AuthResponse, AuthMeResponse, AuthUser } from "@/types"
 
 export const authService = {
   async login(data: LoginRequest): Promise<AuthResponse> {
@@ -13,8 +13,9 @@ export const authService = {
   },
 
   async getMe(): Promise<AuthUser> {
-    const response = await apiClient.get<{ user: AuthUser }>("/auth/me")
-    return response.data.user
+    const response = await apiClient.get<AuthMeResponse>("/auth/me")
+    const { user, subscription, access } = response.data
+    return { ...user, subscription: subscription ?? user.subscription, access: access ?? user.access }
   },
 
   async refresh(refreshToken: string): Promise<AuthResponse> {

@@ -16,16 +16,19 @@ import {
   ChevronLeft,
   ChevronRight,
   ShieldCheck,
+  LockKeyhole,
 } from "lucide-react"
 import { useState } from "react"
 import { BrandMark } from "@/components/brand/brand-mark"
 import { useAuthStore } from "@/stores/auth-store"
+import { hasFeatureAccess, type PremiumFeature } from "@/components/access/locked-feature"
 
-const navItems = [
+const navItems: { label: string; href: string; icon: typeof LayoutDashboard; feature?: PremiumFeature }[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Stocks", href: "/stocks", icon: TrendingUp },
   { label: "Sector", href: "/sectors", icon: Layers3 },
-  { label: "Wyckoff", href: "/wyckoff", icon: Orbit },
+  { label: "Wyckoff", href: "/wyckoff", icon: Orbit, feature: "wyckoff" },
+  { label: "Broker Flow Analysis", href: "/broker-flow-backtest", icon: TrendingUp, feature: "brokerFlowBacktest" },
   { label: "Daily 5 Picks", href: "/daily-picks", icon: ListChecks },
   { label: "Portfolio", href: "/portfolio", icon: Briefcase },
   { label: "Watchlist", href: "/watchlist", icon: Star },
@@ -37,6 +40,7 @@ export function Sidebar() {
   const pathname = usePathname()
   const [collapsed, setCollapsed] = useState(false)
   const isAdmin = useAuthStore((state) => state.user?.role === "admin")
+  const user = useAuthStore((state) => state.user)
 
   return (
     <aside
@@ -57,7 +61,13 @@ export function Sidebar() {
       <nav className="flex-1 space-y-1 p-2">
         {[...navItems, ...(isAdmin ? [{ label: "Admin", href: "/admin", icon: ShieldCheck }] : [])].map((item) => {
           const isActive = pathname.startsWith(item.href)
-          return (
+          const locked = item.feature && !hasFeatureAccess(user, item.feature)
+          const content = <><item.icon className="h-4 w-4 shrink-0" />{!collapsed && <span className="flex-1">{item.label}</span>}{locked && <LockKeyhole className="h-3.5 w-3.5 text-amber-500" />}</>
+          return locked ? (
+            <div key={item.href} aria-disabled="true" title="Account inactive — contact Telegram/admin for activation" className="flex cursor-not-allowed items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground/60">
+              {content}
+            </div>
+          ) : (
             <Link
               key={item.href}
               href={item.href}
@@ -67,10 +77,7 @@ export function Sidebar() {
                   ? "bg-muted text-foreground"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
               )}
-            >
-              <item.icon className="h-4 w-4 shrink-0" />
-              {!collapsed && <span>{item.label}</span>}
-            </Link>
+            >{content}</Link>
           )
         })}
       </nav>
