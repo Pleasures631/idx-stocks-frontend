@@ -467,6 +467,82 @@ export interface BacktestResponse {
   avg_profit: number
 }
 
+// --- Daily 5 Stock Picks ---
+export interface DailyPickComponentScores {
+  room: number
+  momentum: number
+  trend: number
+  base: number
+  breakout: number
+  liquidity: number
+  volume: number
+  risk: number
+  broker: number
+}
+
+export interface DailyPickWeights {
+  room: number
+  momentum: number
+  trend: number
+  base: number
+  breakout: number
+  liquidity: number
+  volume: number
+  risk: number
+  broker: number
+}
+
+export interface DailyPickFormula {
+  version: string
+  description: string
+  eligibility: string[]
+  weights: DailyPickWeights
+}
+
+export interface DailyStockPick {
+  ticker: string
+  stock_name: string
+  rank: number
+  score: number
+  signal_date: string
+  intended_execution_date: string
+  momentum_20d_pct: number
+  trend_vs_sma20_pct: number
+  average_value_20d: number
+  volume_ratio_20d: number
+  volatility_20d_pct: number
+  setup_label: string
+  layer: "FIRST_LAYER" | "SECOND_LAYER"
+  market_cap: number
+  adtv_20d: number
+  rsi_14: number
+  return_5d_pct: number
+  distance_to_high_20d_pct: number
+  atr_14_pct: number
+  broker_confirmation: "Positif" | "Netral" | "Negatif" | "Unavailable"
+  broker_flow_status: "confirmed_positive" | "neutral" | "confirmed_negative" | "unavailable"
+  component_scores: DailyPickComponentScores
+  reasons: string[]
+}
+
+export interface DailyStockPicksData {
+  signal_date: string | null
+  intended_execution_date: string | null
+  intended_execution_session: string
+  timezone: string
+  cutoff_time: string
+  calendar_basis: "weekday_fallback_no_holiday_calendar"
+  data_status: "ready" | "latest_data_incomplete_fallback" | "no_data"
+  is_stale: boolean
+  latest_observed_date: string | null
+  latest_observed_stock_count: number
+  comparison_stock_count: number
+  latest_completeness_ratio: number | null
+  formula: DailyPickFormula
+  picks: DailyStockPick[]
+  limitations: string[]
+}
+
 // --- Backtest Run (V1) ---
 export interface BacktestRunRequest {
   run_name: string
