@@ -100,14 +100,14 @@ export function WyckoffOrbitalRoadmap({ roadmap, replayRoadmaps = [] }: WyckoffO
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2"><Orbit className="h-5 w-5 text-indigo-300" /><CardTitle>Wyckoff Orbital Roadmap</CardTitle></div>
           <div className="flex items-center gap-2">
-            <span className="text-[11px] text-slate-400">{useReplay ? "Replay" : "60 sesi"}</span>
+            <span className="text-[11px] text-slate-400">{useReplay ? "Replay" : `${baseRoadmap.observed_sessions} sesi`}</span>
             <button type="button" role="switch" aria-label="Gunakan roadmap replay" aria-checked={useReplay} disabled={!replayAvailable} onClick={() => setUseReplay((current) => !current)} className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${useReplay ? "bg-orange-400" : "bg-slate-700"} disabled:cursor-not-allowed disabled:opacity-50`}>
               <span className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${useReplay ? "translate-x-4" : "translate-x-0.5"}`} />
             </button>
             <Badge className="border-orange-300/40 bg-orange-400/15 text-orange-100">{useReplay ? "Snapshot Replay" : baseRoadmap.phase_label}</Badge>
           </div>
         </div>
-        <CardDescription className="text-slate-400">{useReplay ? "Replay memakai satu window terpadu 60 sesi perdagangan sampai tiap tanggal snapshot untuk broker flow dan fase Wyckoff." : `Fase terakhir ${baseRoadmap.effective_end_date} - struktur ${baseRoadmap.observed_sessions} sesi - bukan prediksi harga`}</CardDescription>
+        <CardDescription className="text-slate-400">{useReplay ? `Replay memakai window ${replayRoadmaps[0]?.roadmap.observed_sessions ?? 0} sesi perdagangan sampai tiap tanggal snapshot untuk broker flow dan fase Wyckoff.` : `Fase terakhir ${baseRoadmap.effective_end_date} - struktur ${baseRoadmap.observed_sessions} sesi - bukan prediksi harga`}</CardDescription>
       </CardHeader>
       <CardContent className="relative space-y-5">
         {useReplay && replayAvailable ? (
@@ -118,7 +118,7 @@ export function WyckoffOrbitalRoadmap({ roadmap, replayRoadmaps = [] }: WyckoffO
                   <span className="text-sm font-semibold text-orange-100">Snapshot {snapshot.date}</span>
                   <Badge className="border-orange-300/40 bg-orange-400/15 text-orange-100">{snapshot.roadmap.phase_label}</Badge>
                 </div>
-                <div className="text-xs text-slate-400">Window terpadu: 60 sesi perdagangan · Struktur Wyckoff {snapshot.roadmap.observed_sessions} sesi ({snapshot.roadmap.effective_start_date} - {snapshot.roadmap.effective_end_date})</div>
+                <div className="text-xs text-slate-400">Window replay: {snapshot.roadmap.observed_sessions} sesi perdagangan · Struktur Wyckoff {snapshot.roadmap.observed_sessions} sesi ({snapshot.roadmap.effective_start_date} - {snapshot.roadmap.effective_end_date})</div>
                 <RoadmapTrack roadmap={snapshot.roadmap} />
                 <RoadmapSummary roadmap={snapshot.roadmap} />
               </div>

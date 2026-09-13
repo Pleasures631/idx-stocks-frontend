@@ -14,7 +14,9 @@ import type { ReplayRoadmapSnapshot, StockAnalyze } from "@/types"
 import { getBrokerFlowStatus } from "./broker-flow-status"
 
 const DEFAULT_SNAPSHOT_DATES = ["2026-05-11", "2026-05-25", "2026-06-02"]
-const REPLAY_LOOKBACK_SESSIONS = 60
+// Replay is intentionally short-horizon: one trading week per snapshot.
+// The regular (non-replay) Wyckoff roadmap can still use its longer window.
+const REPLAY_LOOKBACK_SESSIONS = 7
 
 interface ReplayResult {
   date: string

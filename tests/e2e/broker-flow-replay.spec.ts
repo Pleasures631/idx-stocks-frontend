@@ -84,7 +84,7 @@ function analyzeResponse(to: string) {
         price_position_pct: 0.05,
         price_confirmation: "CONFIRMED",
       },
-      coverage: { requested_start_date: "2026-03-01", requested_end_date: to, effective_start_date: "2026-03-01", effective_end_date: to, eligible_sessions: 60, covered_sessions: 60, coverage_ratio: 1, source: "Exodus", data_scope: "top_25_each_side", is_truncated: true, per_side_limit: 25 },
+      coverage: { requested_start_date: "2026-04-30", requested_end_date: to, effective_start_date: "2026-04-30", effective_end_date: to, eligible_sessions: 7, covered_sessions: 7, coverage_ratio: 1, source: "Exodus", data_scope: "top_25_each_side", is_truncated: true, per_side_limit: 25 },
       warnings: [],
       broker_behavior_profiles: [],
       wyckoff_roadmap: {
@@ -92,17 +92,17 @@ function analyzeResponse(to: string) {
         phase_label: "SOS - Sign of Strength",
         nodes: ["accumulation", "spring", "sos", "lps", "markup", "distribution", "utad", "markdown"].map((key, index) => ({ key, label: key === "sos" ? "SOS" : key, status: index < 2 ? "completed" : index === 2 ? "current" : "upcoming", description: "Roadmap evidence" })),
         evidence: ["Harga keluar dari range", "Volume mendukung breakout"],
-        effective_start_date: "2026-03-01",
+        effective_start_date: "2026-04-30",
         effective_end_date: to,
-        observed_sessions: 60,
-        required_sessions: 30,
+        observed_sessions: 7,
+        required_sessions: 7,
         warnings: [],
       },
     },
   }
 }
 
-test("replays broker flow indicators on a unified 60-session window", async ({ page }) => {
+test("replays broker flow indicators on a short 7-session window", async ({ page }) => {
   const analyzeRequests: string[] = []
   await page.route("http://localhost:8080/stocks/CUAN**", async (route) => {
     const url = route.request().url()
@@ -141,14 +141,14 @@ test("replays broker flow indicators on a unified 60-session window", async ({ p
   await expect(page.getByText("Wyckoff Orbital Roadmap")).toBeVisible()
   await expect(page.getByText("SOS - Sign of Strength")).toBeVisible()
   await page.getByRole("switch", { name: "Gunakan roadmap replay" }).click()
-  await expect(page.getByText("Replay memakai satu window terpadu 60 sesi perdagangan sampai tiap tanggal snapshot untuk broker flow dan fase Wyckoff.")).toBeVisible()
+  await expect(page.getByText("Replay memakai window 7 sesi perdagangan sampai tiap tanggal snapshot untuk broker flow dan fase Wyckoff.")).toBeVisible()
   await expect(page.getByText("Snapshot 2026-05-11")).toBeVisible()
-  await expect(page.getByText("Window terpadu: 60 sesi perdagangan · Struktur Wyckoff 60 sesi (2026-03-01 - 2026-05-11)")).toBeVisible()
+  await expect(page.getByText("Window replay: 7 sesi perdagangan · Struktur Wyckoff 7 sesi (2026-04-30 - 2026-05-11)")).toBeVisible()
   await page.getByRole("tab", { name: "Broker Summary" }).click()
   await page.getByRole("tab", { name: "Analisis Broker Flow" }).click()
   await expect(page.getByText("Akumulasi Big Money").first()).toBeVisible()
   const replayRequests = analyzeRequests.map((request) => new URL(request).searchParams)
-  expect(replayRequests.some((params) => params.get("to") === "2026-05-11" && params.get("lookback_sessions") === "60" && !params.has("from"))).toBe(true)
-  expect(replayRequests.some((params) => params.get("to") === "2026-05-25" && params.get("lookback_sessions") === "60" && !params.has("from"))).toBe(true)
-  expect(replayRequests.some((params) => params.get("to") === "2026-06-02" && params.get("lookback_sessions") === "60" && !params.has("from"))).toBe(true)
+  expect(replayRequests.some((params) => params.get("to") === "2026-05-11" && params.get("lookback_sessions") === "7" && !params.has("from"))).toBe(true)
+  expect(replayRequests.some((params) => params.get("to") === "2026-05-25" && params.get("lookback_sessions") === "7" && !params.has("from"))).toBe(true)
+  expect(replayRequests.some((params) => params.get("to") === "2026-06-02" && params.get("lookback_sessions") === "7" && !params.has("from"))).toBe(true)
 })
