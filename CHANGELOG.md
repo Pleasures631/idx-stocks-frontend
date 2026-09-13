@@ -27,6 +27,7 @@
 
 ## [2026-09-13] Inactive Account Feature Gating
 
+- Fixed session restoration on browser refresh by parsing the backend `/auth/me` response envelope correctly; valid users are no longer logged out because the refreshed profile was read from the wrong JSON level.
 - Daily 5 Picks now has a route-level guard and locked mobile bottom-nav state, preventing direct access and premium data fetches for inactive users.
 - Daily 5 Picks is now included in premium navigation gating.
 - Removed the standalone Broker Flow Analysis and Portfolio navigation items; broker flow remains available within Stocks.
