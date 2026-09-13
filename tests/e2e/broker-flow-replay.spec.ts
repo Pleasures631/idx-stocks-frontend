@@ -59,8 +59,8 @@ function analyzeResponse(to: string) {
       formatted_sell_value: "80M",
       formatted_net_value: "20M",
       formatted_foreign_net: "30M",
-      brokers_accumulation: [{ broker_code: "AK", broker_type: "Asing", broker_group: "FOREIGN", buy_value: 50000000, sell_value: 10000000, net_value: 40000000, buy_lot: 1, sell_lot: -1, net_lot: 0, buy_avg_price: 1000, sell_avg_price: 1000, active_days: 4, formatted_net_value: "40M", display_status: "AK | Net: 40M" }],
-      brokers_distribution: [{ broker_code: "CC", broker_type: "Lokal", broker_group: "RETAIL", buy_value: 10000000, sell_value: 30000000, net_value: -20000000, buy_lot: 1, sell_lot: -1, net_lot: 0, buy_avg_price: 1000, sell_avg_price: 1000, active_days: 4, formatted_net_value: "-20M", display_status: "CC | Net: -20M" }],
+      brokers_accumulation: Array.from({ length: 10 }, (_, index) => ({ broker_code: index === 0 ? "AK" : `AK${index}`, broker_type: "Asing", broker_group: "FOREIGN", buy_value: 50000000 - index, sell_value: 10000000, net_value: 40000000 - index, buy_lot: 1, sell_lot: -1, net_lot: 0, buy_avg_price: 1000, sell_avg_price: 1000, active_days: 4, formatted_net_value: "40M", display_status: "AK | Net: 40M" })),
+      brokers_distribution: Array.from({ length: 10 }, (_, index) => ({ broker_code: index === 0 ? "CC" : `CC${index}`, broker_type: "Lokal", broker_group: "RETAIL", buy_value: 10000000, sell_value: 30000000 + index, net_value: -20000000 - index, buy_lot: 1, sell_lot: -1, net_lot: 0, buy_avg_price: 1000, sell_avg_price: 1000, active_days: 4, formatted_net_value: "-20M", display_status: "CC | Net: -20M" })),
       display_status: "BIG MONEY ACCUMULATION",
       dominant_flow: {
         broker_code: "AK",
@@ -133,6 +133,19 @@ test("replays broker flow indicators on a short 7-session window", async ({ page
   await expect(page.getByText("S FREQ", { exact: true })).toBeVisible()
   await expect(page.getByText("S AVG", { exact: true })).toBeVisible()
   await expect(page.getByText("S VAL", { exact: true })).toBeVisible()
+  const buyTable = page.getByRole("heading", { name: "Top Broker BUY" }).locator("..").getByRole("table")
+  const sellTable = page.getByRole("heading", { name: "Top Broker SELL" }).locator("..").getByRole("table")
+  const loadMoreButtons = page.getByRole("button", { name: /Muat lebih banyak/ })
+  await expect(buyTable.locator("tbody tr")).toHaveCount(3)
+  await expect(sellTable.locator("tbody tr")).toHaveCount(3)
+  await expect(loadMoreButtons).toHaveCount(2)
+  await loadMoreButtons.first().click()
+  await expect(buyTable.locator("tbody tr")).toHaveCount(6)
+  await loadMoreButtons.first().click()
+  await expect(buyTable.locator("tbody tr")).toHaveCount(9)
+  await loadMoreButtons.first().click()
+  await expect(buyTable.locator("tbody tr")).toHaveCount(10)
+  await expect(page.getByRole("button", { name: /Muat lebih banyak/ })).toHaveCount(1)
   await expect(page.getByText("2026-05-25", { exact: true })).toBeVisible()
   await expect(page.getByText("2026-06-02", { exact: true })).toBeVisible()
   await firstSnapshotDate.fill("2026-06-01")

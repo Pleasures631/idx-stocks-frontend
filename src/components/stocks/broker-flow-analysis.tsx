@@ -1,7 +1,7 @@
 "use client"
 
 import { AlertTriangle, Info } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -56,6 +56,9 @@ function FlowTable({ title, rows, side, profiles }: { title: string; rows: Analy
   const maxRows = 10
   const visibleRows = rows.slice(0, Math.min(visibleCount, maxRows))
   const canLoadMore = visibleRows.length < Math.min(rows.length, maxRows)
+  useEffect(() => {
+    setVisibleCount(3)
+  }, [rows])
   const profileByCode = new Map(profiles.map((profile) => [profile.broker_code, profile]))
   return (
     <div className="space-y-2">
