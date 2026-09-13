@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
-import { ArrowLeft, ChevronRight, Search, Layers3, RefreshCw } from "lucide-react"
+import { ArrowLeft, Building2, ChevronRight, CircleHelp, Cpu, Factory, Flame, Gem, HeartPulse, Landmark, Layers3, Leaf, Network, RefreshCw, Search, ShoppingBag, ShoppingBasket, Truck, type LucideIcon } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -18,15 +18,74 @@ function sectorName(stock: StockListItem) {
   return stock.sector.trim() || UNCATEGORIZED
 }
 
-function SectorCard({ sector, count, onClick }: { sector: string; count: number; onClick: () => void }) {
+type SectorVisual = {
+  icon: LucideIcon
+  bar: string
+  border: string
+  iconBackground: string
+  iconColor: string
+}
+
+const SECTOR_VISUALS: SectorVisual[] = [
+  { icon: Landmark, bar: "bg-violet-400", border: "hover:border-violet-300/60", iconBackground: "bg-violet-400/15", iconColor: "text-violet-200" },
+  { icon: Building2, bar: "bg-sky-400", border: "hover:border-sky-300/60", iconBackground: "bg-sky-400/15", iconColor: "text-sky-200" },
+  { icon: Factory, bar: "bg-orange-400", border: "hover:border-orange-300/60", iconBackground: "bg-orange-400/15", iconColor: "text-orange-200" },
+  { icon: Leaf, bar: "bg-emerald-400", border: "hover:border-emerald-300/60", iconBackground: "bg-emerald-400/15", iconColor: "text-emerald-200" },
+  { icon: ShoppingBasket, bar: "bg-pink-400", border: "hover:border-pink-300/60", iconBackground: "bg-pink-400/15", iconColor: "text-pink-200" },
+  { icon: ShoppingBag, bar: "bg-rose-400", border: "hover:border-rose-300/60", iconBackground: "bg-rose-400/15", iconColor: "text-rose-200" },
+  { icon: HeartPulse, bar: "bg-red-400", border: "hover:border-red-300/60", iconBackground: "bg-red-400/15", iconColor: "text-red-200" },
+  { icon: Cpu, bar: "bg-cyan-400", border: "hover:border-cyan-300/60", iconBackground: "bg-cyan-400/15", iconColor: "text-cyan-200" },
+  { icon: Flame, bar: "bg-amber-400", border: "hover:border-amber-300/60", iconBackground: "bg-amber-400/15", iconColor: "text-amber-200" },
+  { icon: Gem, bar: "bg-fuchsia-400", border: "hover:border-fuchsia-300/60", iconBackground: "bg-fuchsia-400/15", iconColor: "text-fuchsia-200" },
+  { icon: Network, bar: "bg-indigo-400", border: "hover:border-indigo-300/60", iconBackground: "bg-indigo-400/15", iconColor: "text-indigo-200" },
+  { icon: Truck, bar: "bg-lime-400", border: "hover:border-lime-300/60", iconBackground: "bg-lime-400/15", iconColor: "text-lime-200" },
+]
+
+function sectorVisual(sector: string, fallbackIndex: number): SectorVisual {
+  const normalized = sector.toLowerCase()
+  if (normalized === UNCATEGORIZED.toLowerCase()) {
+    return { icon: CircleHelp, bar: "bg-slate-400", border: "hover:border-slate-300/60", iconBackground: "bg-slate-400/15", iconColor: "text-slate-200" }
+  }
+
+  const keywordIndex = ([
+    ["keuangan", 0],
+    ["infrastruktur", 1],
+    ["industri", 2],
+    ["barang baku", 3],
+    ["bahan baku", 3],
+    ["konsumen primer", 4],
+    ["konsumen non-primer", 5],
+    ["kesehatan", 6],
+    ["teknologi", 7],
+    ["energi", 8],
+    ["properti", 9],
+    ["real estat", 9],
+    ["transportasi", 10],
+    ["logistik", 10],
+  ] as Array<[string, number]>).find(([keyword]) => normalized.includes(keyword))?.[1]
+  if (keywordIndex != null) return SECTOR_VISUALS[keywordIndex]
+
+  return SECTOR_VISUALS[fallbackIndex % SECTOR_VISUALS.length]
+}
+
+function SectorCard({ sector, count, visualIndex, onClick }: { sector: string; count: number; visualIndex: number; onClick: () => void }) {
+  const visual = sectorVisual(sector, visualIndex)
+  const Icon = visual.icon
+
   return (
-    <button type="button" onClick={onClick} className="w-full text-left">
-      <Card className="transition-colors hover:border-primary/50 hover:bg-muted/40">
-        <CardHeader className="flex-row items-center justify-between space-y-0 pb-3">
-          <CardTitle className="text-base">{sector}</CardTitle>
+    <button type="button" onClick={onClick} className="group w-full text-left">
+      <Card className={`relative overflow-hidden border-border/70 transition-all duration-200 hover:-translate-y-0.5 hover:bg-muted/40 ${visual.border}`}>
+        <div aria-hidden="true" className={`absolute inset-x-0 top-0 h-1 ${visual.bar}`} />
+        <CardHeader className="flex-row items-center justify-between gap-3 space-y-0 pb-3 pt-5">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${visual.iconBackground} ${visual.iconColor}`}>
+              <Icon aria-hidden="true" className="h-5 w-5" />
+            </span>
+            <CardTitle className="truncate text-base">{sector}</CardTitle>
+          </div>
           <div className="flex items-center gap-2">
-            <Badge variant="secondary">{count} emiten</Badge>
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            <Badge variant="outline" className="shrink-0 border-border/80 bg-background/70 font-semibold text-foreground">{count} emiten</Badge>
+            <ChevronRight aria-hidden="true" className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
           </div>
         </CardHeader>
       </Card>
@@ -170,7 +229,10 @@ export function SectorListPage() {
             <>
               <div className="text-sm text-muted-foreground">{groupedSectors.length} sector · {totalStockCount} emiten</div>
               <div className="grid gap-4 lg:grid-cols-2">
-                {visibleSectors.map(([sector, sectorStocks]) => <SectorCard key={sector} sector={sector} count={sectorStocks.length} onClick={() => { setSelectedSector(sector); setSearch("") }} />)}
+                {visibleSectors.map(([sector, sectorStocks]) => {
+                  const visualIndex = groupedSectors.findIndex(([groupSector]) => groupSector === sector)
+                  return <SectorCard key={sector} sector={sector} count={sectorStocks.length} visualIndex={visualIndex} onClick={() => { setSelectedSector(sector); setSearch("") }} />
+                })}
               </div>
             </>
           ) : (

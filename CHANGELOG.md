@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-09-13] Sector Card Visual Identity
+
+- Setiap sector sekarang memiliki ikon dan aksen warna berbeda berdasarkan klasifikasi IDX.
+- Badge jumlah emiten dibuat lebih kontras, dengan accent bar dan hover state ringan.
+- Fallback sector tetap memakai identitas visual yang stabil saat pencarian digunakan.
+- QA PASSED: lint, TypeScript, dan Playwright sector smoke.
+
 ## [2026-09-13] Sector Drilldown View
 
 - Halaman Sector sekarang menampilkan ringkasan jumlah sector dan jumlah emiten terlebih dahulu.
