@@ -93,7 +93,7 @@ test("inactive users stay logged in but premium navigation and routes are locked
 
   await page.goto("/dashboard")
   await expect(page.getByText("Regular User")).toBeVisible()
-  await expect(page.getByText("Broker Flow Analysis", { exact: true })).toBeVisible()
+  await expect(page.getByRole("link", { name: "Broker Flow Analysis", exact: true })).toHaveCount(0)
   await expect(page.getByTitle(/account inactive/i).first()).toBeVisible()
 
   await page.goto("/broker-flow-backtest")

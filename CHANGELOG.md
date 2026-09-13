@@ -27,6 +27,10 @@
 
 ## [2026-09-13] Inactive Account Feature Gating
 
+- Daily 5 Picks now has a route-level guard and locked mobile bottom-nav state, preventing direct access and premium data fetches for inactive users.
+- Daily 5 Picks is now included in premium navigation gating.
+- Removed the standalone Broker Flow Analysis and Portfolio navigation items; broker flow remains available within Stocks.
+- Renamed the Wyckoff navigation label to Wyckoff Universe.
 - Premium entitlements now fail closed: non-admin users without an explicit active subscription/access summary are locked instead of being granted access by legacy persisted sessions or incomplete API responses.
 - Hydrate subscription and access summaries from `/auth/me` while keeping inactive accounts logged in for basic dashboard use.
 - Added explicit premium gates and lock indicators for Broker Flow Analysis, Broker Flow Backtest, and Wyckoff, including direct-route locked states.

@@ -8,6 +8,7 @@ import type { AuthUser } from "@/types"
 export const PREMIUM_FEATURES = {
   brokerFlowAnalysis: { label: "Broker Flow Analysis", description: "Analisis broker flow, replay, dan roadmap Wyckoff." },
   brokerFlowBacktest: { label: "Broker Flow Backtest", description: "Evaluasi sinyal broker flow dengan data historis." },
+  dailyPicks: { label: "Daily 5 Picks", description: "Lima saham pilihan berdasarkan setup dan konfirmasi pasar." },
   wyckoff: { label: "Wyckoff", description: "Market Cycle Orbit dan insight fase pasar." },
 } as const
 

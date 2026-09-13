@@ -684,7 +684,7 @@ export interface AuthSubscriptionSummary {
 export interface AuthAccessSummary {
   is_active?: boolean
   active?: boolean
-  features?: Partial<Record<"brokerFlowAnalysis" | "brokerFlowBacktest" | "wyckoff", boolean>>
+  features?: Partial<Record<"brokerFlowAnalysis" | "brokerFlowBacktest" | "dailyPicks" | "wyckoff", boolean>>
 }
 
 export interface AuthUser {
