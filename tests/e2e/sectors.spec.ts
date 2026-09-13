@@ -10,7 +10,7 @@ const stockList = {
   ],
 }
 
-test("groups stocks by sector and supports search", async ({ page }) => {
+test("shows sector counts first and reveals emitens after selection", async ({ page }) => {
   await page.route("**/stocks/list**", async (route) => {
     await route.fulfill({ json: stockList })
   })
@@ -20,9 +20,14 @@ test("groups stocks by sector and supports search", async ({ page }) => {
   await expect(page.getByText("Keuangan", { exact: true })).toBeVisible()
   await expect(page.getByText("Infrastruktur", { exact: true })).toBeVisible()
   await expect(page.getByText("Belum diklasifikasikan", { exact: true })).toBeVisible()
-  await expect(page.getByRole("link", { name: /BBCA/ })).toHaveAttribute("href", "/stocks/BBCA")
+  await expect(page.getByRole("link", { name: /BBCA/ })).toHaveCount(0)
 
-  await page.getByPlaceholder("Cari ticker, nama, atau sector...").fill("TLKM")
+  await page.getByPlaceholder("Cari sector...").fill("Infra")
   await expect(page.getByText("Infrastruktur", { exact: true })).toBeVisible()
   await expect(page.getByText("Keuangan", { exact: true })).toHaveCount(0)
+
+  await page.getByRole("button", { name: /Infrastruktur/ }).click()
+  await expect(page.getByPlaceholder("Cari ticker atau nama emiten...")).toBeVisible()
+  await expect(page.getByRole("link", { name: /TLKM/ })).toHaveAttribute("href", "/stocks/TLKM")
+  await expect(page.getByRole("link", { name: /BBCA/ })).toHaveCount(0)
 })

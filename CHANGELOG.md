@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-09-13] Sector Drilldown View
+
+- Halaman Sector sekarang menampilkan ringkasan jumlah sector dan jumlah emiten terlebih dahulu.
+- Daftar ticker tidak lagi memenuhi halaman awal; ticker baru ditampilkan setelah sector dipilih.
+- Pencarian awal memfilter sector, sedangkan pencarian setelah masuk ke sector memfilter ticker dan nama emiten.
+- QA PASSED: lint, TypeScript, dan Playwright sector smoke.
+
 ## [2026-09-13] Unified 60-Session Replay Window
 
 - Replay tidak lagi menghitung window kalender 7 hari; setiap snapshot mengirim `to` dan `lookback_sessions=60` tanpa `from`.
